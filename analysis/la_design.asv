@@ -14,6 +14,25 @@ waist_radius = user_waist_circumference/(2*pi);
 stride_length = -2.234 + 0.106*user_age - 0.0008*user_age^2; % m 
 L_thigh = (0.53-0.285)*user_height; %m
 
+% inputs from gait analyis TO BE CHANGED
+% NEED TO BE VARIABLE
+
+
+% ['thigh_length','spring_length','spring_force', 'spring_x_force', 'spring_y_force', 'thigh_angle', 'cable_thigh_angle']
+gait_param = readmatrix('python_gait_output.csv'); %includes index column, which can't be interpreted in numerical matrix
+gait_param(:,1) = []; % removes index column
+
+max_force_param = gait_param(1,:);
+min_force_param = gait_param(2,:);
+max_x_force_param = gait_param(3,:);
+max_y_force_param = gait_param(4,:);
+min_x_force_param = gait_param(5, :);
+min_y_force_param = gait_param(6,:);
+
+[angle_max_force_pulley, force_max_pulley_y, force_max_pulley_x] = find_pulley_force(max_force_param(6),max_force_param(3), waist_hip_length, hip_cuff_distance, stride_length, weight_pulley);
+[angle_min_force_pulley, force_min_pulley_y, force_min_pulley_x] = find_pulley_force(min_force_param(6),min_force_param(3), waist_hip_length, hip_cuff_distance, stride_length, weight_pulley);
+
+
 % material properties: Al alloy 1100 
 alum_1100 = struct;
 alum_1100.elastic_mod = 68900;
@@ -32,7 +51,8 @@ SF_met = false;
     radius_pin = 3.5; % mm
     length_pin = 30; % mm 
     LA_length = 1/4*stride_length - waist_radius - length_pin - waist_cuff_thickness;
-    hip_cuff_distance = 7/8*L_thigh; %m
+    hip_cuff_distance = 7/8*L_thigh;
+    cuff_disp = 7/8*L_thigh; %m
     
 % INITIAL CONDITIONS
     b = 13;
@@ -42,22 +62,7 @@ SF_met = false;
     cost_lowest = [b, h, 900000];
     SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
     count = 0;
-% inputs from gait analyis TO BE CHANGED
-% NEED TO BE VARIABLE
 
-% ['thigh_length','spring_length','spring_force', 'spring_x_force', 'spring_y_force', 'thigh_angle', 'cable_thigh_angle']
-gait_param = readmatrix('python_gait_output.csv'); %includes index column, which can't be interpreted in numerical matrix
-gait_param(:,1) = []; % removes index column
-
-max_force_param = gait_param(1,:);
-min_force_param = gait_param(2,:);
-max_x_force_param = gait_param(3,:);
-max_y_force_param = gait_param(4,:);
-min_x_force_param = gait_param(5, :);
-min_y_force_param = gait_param(6,:);
-
-[angle_max_force_pulley, force_max_pulley_y, force_max_pulley_x] = find_pulley_force(max_force_param(6),max_force_param(3), waist_hip_length, hip_cuff_distance, stride_length, weight_pulley);
-[angle_min_force_pulley, force_min_pulley_y, force_min_pulley_x] = find_pulley_force(min_force_param(6),min_force_param(3), waist_hip_length, hip_cuff_distance, stride_length, weight_pulley);
 
 while count<10
   
