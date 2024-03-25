@@ -14,18 +14,11 @@ waist_radius = user_waist_circumference/(2*pi);
 stride_length = -2.234 + 0.106*user_age - 0.0008*user_age^2; % m 
 L_thigh = (0.53-0.285)*user_height; %m
 
-% material properties: Al alloy 1100 
-alum_1100 = struct;
-alum_1100.elastic_mod = 68900;
-alum_1100.strength_yield = 24.1;
-alum_1100.strength_ult = 75.8;
-alum_1100.density = 2710;
-
 % loop flag
 SF_met = false;
 
 % CONSTANT DIMENSIONS
-    waist_cuff_thickness = 10;
+    waist_cuff_thickness = 10;%mm
     LA_pulley_center = 8;
     length_dowel_bolt = 30; %mm, distance from end of dowel pin to centroid of screws
     length_dowel = 30; %length of dowel pin  ?SWITCH TO LENGTH_PIN?
@@ -67,7 +60,7 @@ while count<10
     LA_volume = LA_length*area_cross_section_LA;
     pin_volume = pi*radius_pin^2*length_pin;
     
-    LA_mass = (LA_volume + pin_volume)*alum_1100.density;
+    LA_mass = (LA_volume + pin_volume)*alum_1100("density");
     LA_center_of_mass = (length_pin/2)*(radius_pin*2*length_pin) + (length_pin + LA_length/2)*(LA_length*h);
     
     
@@ -76,7 +69,7 @@ while count<10
     L_bending = LA_length + LA_pulley_center + length_dowel/2; %find better name?
     b_bending = L_bending - a_bending; %find better name?
     
-    deflection_max = force_max_pulley_y*b_bending^2*L_bending/(3*alum_1100.elastic_mod*moment_of_inertia_LA);
+    deflection_max = force_max_pulley_y*b_bending^2*L_bending/(3*alum_1100("elastic_mod")*moment_of_inertia_LA);
     
     % STRESSES
     
@@ -96,8 +89,9 @@ while count<10
     bending_min_moment_LA = -force_min_bending*(LA_length-length_dowel_bolt);
     stress_min_bending_LA = 2.1*(bending_min_moment_LA*h/2/moment_of_inertia_LA)*bending_max_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
     
-    SF_static_bending_pin = stress_max_bending_pin/alum_1100.strength_yield;
-    SF_static_bending_LA = stress_max_bending_LA/alum_1100.strength_yield;
+
+    SF_static_bending_pin = stress_max_bending_pin/alum_1100("strength_yield");
+    SF_static_bending_LA = stress_max_bending_LA/alum_1100("strength_yield");
     
     SF_cyclical_bending_pin = SF_fatigue(stress_max_bending_pin, stress_min_bending_pin, 0);
     SF_cyclical_bending_LA = SF_fatigue(stress_max_bending_LA, stress_min_bending_LA, 0);
@@ -112,8 +106,8 @@ while count<10
     stress_min_axial_pin = force_min_axial/(area_cross_section_LA)*2.5; %min loading at max stress location
     stress_min_axial_LA = force_min_axial/(h-diameter_bolt)*3.25; %min loading at max stress location
     
-    SF_static_axial_pin = stress_max_axial_pin/alum_1100.strength_yield;
-    SF_static_axial_LA = stress_max_axial_LA/alum_1100.strength_yield;
+    SF_static_axial_pin = stress_max_axial_pin/alum_1100("strength_yield");
+    SF_static_axial_LA = stress_max_axial_LA/alum_1100("strength_yield");
     
     SF_cyclical_axial_pin = SF_fatigue(stress_max_axial_pin, stress_min_axial_pin, 1);
     SF_cyclical_axial_LA = SF_fatigue(stress_max_axial_LA, stress_min_axial_LA, 1);
