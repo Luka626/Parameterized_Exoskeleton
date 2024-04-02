@@ -37,7 +37,7 @@ while count<10
     
     max_deflection = L*tan(7/180*2*pi);
     
-    I_x_x = t*(w -shell_inner_radius)^3/12;
+    I_x_x = t*(w -shell_inner_radius)^3/12; %not counter balanced with thigh bar breaking 
     
     deflection_force = 6*max_deflection*polyethylene("elastic_mod")*I_x_x/(a^2*(3*L-a)) %not the same result as working analysis, even with same Ixx used
     velcro_area = 55*pi*velcro_inner_radius*10^3; %mm^2
