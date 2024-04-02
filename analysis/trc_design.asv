@@ -24,11 +24,11 @@ fin_thickness = 5*user_height/1500;
 %VARIABLE DIMENSIONS
 partialSidebarLength = (user_height*1000 * 0.245 - 180)*10^-3; 
 L =partialSidebarLength + shellLength;
-fin_platform_extrusion = 60*user_height/1.7; %m "fin_platform_extrusion"  TO BE PARAMETRIZED (I THINK)
+R = 60*user_height/1.7; %m "fin_platform_extrusion"  TO BE PARAMETRIZED (I THINK)
 
 %PARAMETRIZATION INITIALIZATIONS
 count = 0;
-cost_lowest = [L, fin_platform_extrusion, 900000];
+cost_lowest = [L, R, 900000];
 SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
 
 while count<10
@@ -52,7 +52,7 @@ while count<10
     
     loading = 1; % axial
     K_f = 2.5; %assumed constant since small variation in R-r
-    fin_area = 2*pi*(fin_platform_extrusion-fin_hole_radius)^2; %m^2, check equation
+    fin_area = 2*pi*(R-fin_hole_radius)^2; %m^2, check equation
     stress_max = K_f*max_force_param(:,2)*sin(max_force_right_angle)/(fin_area*10^6); %N/mm^2
     stress_min = K_f*min_force_param(:,2)*sin(min_force_right_angle)/(fin_area*10^6); %N/mm^2
     
@@ -73,28 +73,28 @@ while count<10
     end
 
     if cost<cost_lowest(1,3)
-        cost_lowest = [L,fin_platform_extrusion,cost]; %store dimensions which give lowest cost
+        cost_lowest = [L,R,cost]; %store dimensions which give lowest cost
         SF_best = current_SF;
     end 
 
     if increase == 1
         L = L*1.02;
-        fin_platform_extrusion = fin_platform_extrusion*1.02;
+        R = R*1.02;
     else
         L = L*0.98;
-        fin_platform_extrusion= fin_platform_extrusion*0.98;
+        R= R*0.98;
     end
 
     count = count + 1;
 end
 
 SF_TRC = SF_best;
-
 % WRITE DIMENSIONS IN TEXT FILE
 fileID = fopen('C:\MCG4322B\MCG4322B\analysis\trc_dimensions.txt','w');
-formatSpec = ['"userHeight" = %3.1f \n "shellLength" = %3.1f \n ' ...
-    '"partialSidebarLength" = %3.1f \n "fin_platform_extrusion" = %3.1f \n '];
-fprintf(fileID,formatSpec,user_height,shellLength, partialSidebarLength, fin_platform_extrusion);
+formatSpec = ['"userHeight" = %3.1f \n "velcro_inner_radius" = %3.1f \n ' ...
+    '"fin_hole_radius" = %3.1f \n "fin_thickness" = %3.1f \n'];
+fprintf(fileID,formatSpec,user_height,velcro_inner_radius,fin_hole_radius, ...
+    fin_thickness);
 end 
 
 % CYCLICAL SF 

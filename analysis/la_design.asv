@@ -143,10 +143,8 @@ end
 cost_lowest
 SF_LA = SF_best;
 
-% WRITE DIMENSIONS IN TEXT FILE
-fileID = fopen('C:\MCG4322B\MCG4322B\analysis\LA_dimensions.txt','w');
-formatSpec = '"height" = %3.1f \n "width" = %3.1f \n "length" = %3.1f';
-fprintf(fileID,formatSpec,b, a, LA_length);
+% WRITE TEXT FILE
+formatSpec = ''
 
 end
 
