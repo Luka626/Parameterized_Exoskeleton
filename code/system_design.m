@@ -21,6 +21,8 @@ end
     anthro.height = user_data.height;
     anthro.weight = user_data.weight;
     anthro.age = user_data.age;
+    anthro.waist_circumference = user_data.waist_circumference;
+    anthro.waist_radius = user_data.waist_circumference/(2*pi);
 
 end
 
