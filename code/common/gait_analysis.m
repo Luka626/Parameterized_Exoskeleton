@@ -12,9 +12,9 @@ function [external_loads] = gait_analysis(anthro)
     LA_pulley_center = 0.08; %m
     waist_cuff_thickness = 0.010; %m, should it be constant or change with weight?
     length_pin = 0.030; % m
-    LA_length = 1/4*stride_length - waist_radius - length_pin - waist_cuff_thickness;
-    hip_pulley_length = waist_cuff_thickness + length_pin + LA_length + waist_radius + LA_pulley_center;
-    cuff_disp = 7/8*L_thigh; %m
+    LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
+    hip_pulley_length = waist_cuff_thickness + length_pin + LA_length + user.waist_radius + LA_pulley_center;
+    cuff_disp = 7/8*user.L_thigh; %m
     spring_coeff = 500; %N/m
 
 
@@ -23,6 +23,7 @@ function [external_loads] = gait_analysis(anthro)
     min_force_right_angle= gait_param(1,3);
     max_force_left_angle = gait_param(46,5);
     min_force_left_angle= gait_param(1,5);
+
 
 
     % SPRING LENGTH AT PEAK FLEXION

@@ -1,3 +1,0 @@
-"height" = 13.0 
- "width" = 8.0 
- "length" = 230.0

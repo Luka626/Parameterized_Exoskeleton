@@ -15,8 +15,8 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     user.waist_diameter = 0.580/pi;
 
     % Force Inputs
-    spring.x = design_inputs.external_loads.spring_x_force;
-    spring.y = design_inputs.external_loads.spring_y_force;
+    spring.x = design_inputs.external_loads.max_force.spring_x_force;
+    spring.y = design_inputs.external_loads.max_force.spring_y_force;
 
     %% MASS CALCULATIONS
 

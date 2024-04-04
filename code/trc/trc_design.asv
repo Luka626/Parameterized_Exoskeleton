@@ -1,10 +1,12 @@
-function [SF_TRC] = trc_design(external_loads,anthro, design_inputs, material_data)
+function [safety_factors] = trc_design(anthro, design_inputs, material_data)
 hdpe = material_data("hdpe");
+
 % ANTHROPOMETRY 
 user = anthro;
 
-min_force = external_loads.min_force;
-max_force = external_loads.max_force;
+% FORCE PARAMETERS
+min_force = design_inputs.external_loads.min_force;
+max_force = design_inputs.external_loads.max_force;
 
 % DIMENSIONS
 
@@ -14,92 +16,128 @@ s = 40*10^-3; %m, constant
 
 if(user.height>1850)
     velcro_inner_radius = 0.092;
-    shell_outer_radius = 0.086;
+    shell_outer_radius = 0.086; %to be parametrized
     shell_inner_radius = 0.077;
+    fin_platform_height = 0.06058823; %to be parametrized
+    fin_platform_width = 0.0431509;
 else
     velcro_inner_radius = 0.074;
-    shell_outer_radius = 0.070;
+    shell_outer_radius = 0.070; %to be parametrized
     shell_inner_radius = 0.065;
+    fin_platform_height = 0.050; %to be parametrized
+    fin_platform_width = 0.033265;
 end 
 
-shellLength = user.height/13.07; %
-fin_hole_radius = (8*1500/user.height)*10^-3; %m "fin_hole_radius"  -> should this be kept constant?
-w = shell_outer_radius; %m "shell_outer_radius"
-k = shellLength; %m "shellLength"
-a = 0.07*10^-2; %distance from top of sidebar to velcro slot (will not change)
+shellLength = user.height/13.07; %m
+fin_hole_radius = 0.01; %m 
+a = 0.04; %distance from top of sidebar to velcro slot (will not change)
+partialSidebarLength = (user.height*1000 * 0.245 - 180)*10^-3; %m
+L =partialSidebarLength + shellLength;
+fin_platform_extrusion = 60*user.height/1.7; %m "fin_platform_extrusion" 
 fin_thickness = 5*user.height/1500;
 
-%VARIABLE DIMENSIONS
-partialSidebarLength = (user.height*1000 * 0.245 - 180)*10^-3; 
-L =partialSidebarLength + shellLength;
-fin_platform_extrusion = 60*user.height/1.7; %m "fin_platform_extrusion"  TO BE PARAMETRIZED (I THINK)
 
 %PARAMETRIZATION INITIALIZATIONS
 count = 0;
-cost_lowest = [L, fin_platform_extrusion, 900000];
+cost_lowest = [fin_platform_height, shell_outer_radius, 900000];
 SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
 
-while count<10
+while count<5
   
     % deflection/pressure on wearer SF -> divide/multiply sidebar length 
     
-    max_deflection = L*tan(7/180*2*pi);
+    max_deflection = L*tan(7/180*pi);
     
-    I_x_x = t*(w -shell_inner_radius)^3/12; %not counter balanced with thigh bar breaking 
+    I_x_x = t*(shell_outer_radius -shell_inner_radius)^3/12; %not counter balanced with thigh bar breaking 
     
-    deflection_force = 6*max_deflection*hdpe.modulus*I_x_x/(a^2*(3*L-a)) %not the same result as working analysis, even with same Ixx used
-    velcro_area = 55*pi*velcro_inner_radius*10^3; %mm^2
-    deflection_pressure = deflection_force/velcro_area;
+    deflection_force = 6*max_deflection*hdpe.modulus*I_x_x/(a^2*(3*L-a)); %N, not the same result as working analysis, even with same Ixx used
+    velcro_area = 0.055*pi*velcro_inner_radius;%m^2
+    deflection_pressure = deflection_force/velcro_area; %N/m^2
 
-    max_pressure = 20.532*10^-3; %MPa
 
-    SF_pressure = deflection_pressure/max_pressure;
+    max_pressure = 20532; %N/m^2
+    SF_pressure = max_pressure/deflection_pressure;
+
+    %bending stress on thigh bar
+    thigh_bar_area = t*(shell_outer_radius -shell_inner_radius)
+    bending_stress = deflection_force/thigh_bar_area
+    SF_bending = hdpe.yield/bending_stress
 
 
     % fatigue SF -> divide/multiply fin radii
     
-    K_f = 2.5; %assumed constant since small variation in R-r
-    fin_area = 2*pi*(fin_platform_extrusion-fin_hole_radius)^2; %m^2, check equation
-    stress_max = K_f*max_force.spring_force*sin(max_force_right_angle)/(fin_area*10^6); %N/mm^2
-    stress_min = K_f*min_force.spring_force*sin(min_force_right_angle)/(fin_area*10^6); %N/mm^2
+    K_f = 2.5; %assumed constant since small variation in outer-inner radius
+    fin_base_area = fin_thickness*fin_platform_height; %m^2
+    stress_max = K_f*max_force.spring_force*sin(max_force.cable_thigh_right_angle)/(fin_base_area); %N/m^2
+    stress_min = K_f*min_force.spring_force*sin(min_force.cable_thigh_right_angle)/(fin_base_area); %N/m^2
     
-    SF_cyclical = fatigue([stress_min, stress_max], hdpe, true); %??? need to add C parameter?
+    SF_cyclical = fatigue([stress_min, stress_max], hdpe, true);
     
-    current_SF = [SF_pressure, SF_cyclical];
+    current_SF = [SF_pressure, SF_bending, SF_cyclical]
 
 
-    increase = 0;
-    cost = 0;
-    for SF = current_SF
-        if SF < 2.5
-            increase = 1;
-            cost = cost+10000*(2.5-SF); %large cost for SF under 2.5
-        else 
-            cost = cost+0.001*(SF-2.5); %small cost for SF exceeding 2.5
+   if SF_pressure <2.5
+       pressure_cost = 1000*(2.5-SF_pressure);
+   else
+       pressure_cost = 0.01*(SF_pressure-2.5);
+   end
+   if SF_bending <2.5
+       bending_cost = 1000*(2.5-SF_bending);
+   else
+       bending_cost = 0.01*(SF_bending-2.5);
+   end
+
+   if pressure_cost > bending_cost
+       if SF_pressure < 2.5
+            shell_outer_radius = shell_outer_radius*0.98;
+       else
+            shell_outer_radius = shell_outer_radius*1.02;
+       end
+   else
+        if SF_bending < 2.5
+            shell_outer_radius = shell_outer_radius*1.02;
+       else
+            shell_outer_radius = shell_outer_radius*0.98;
         end
+       shell_outer_radius = shell_outer_radius*1.;
+   end
+   
+
+    if SF_cyclical <2.5
+       cyclical_cost = 1000*(2.5-SF_cyclical);
+       fin_thickness = fin_thickness*1.02;
+    else
+       cyclical_cost = 0.01*(SF_cyclical-2.5);
+       fin_thickness = fin_thickness*0.98;
     end
 
+   cost = pressure_cost + bending_cost + cyclical_cost;
+       
     if cost<cost_lowest(1,3)
-        cost_lowest = [L,fin_platform_extrusion,cost]; %store dimensions which give lowest cost
+        cost_lowest = [fin_thickness, shell_outer_radius,cost]; %store dimensions which give lowest cost
         SF_best = current_SF;
     end 
-
-    if increase == 1
-        L = L*1.02;
-        fin_platform_extrusion = fin_platform_extrusion*1.02;
-    else
-        L = L*0.98;
-        fin_platform_extrusion= fin_platform_extrusion*0.98;
-    end
 
     count = count + 1;
 end
 
-SF_TRC = SF_best;
+cost_lowest
+safety_factors = struct(...
+        'skin_pressure_SF', SF_best(:,1), ...
+        'fin_cylical_SF', SF_best(:,2));
 
 % WRITE DIMENSIONS IN TEXT FILE
-fileID = fopen('C:\MCG4322B\MCG4322B\analysis\trc_dimensions.txt','w');
+fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\thighcuff_dimensions.txt','w');
 formatSpec = ['"userHeight" = %3.1f \n "shellLength" = %3.1f \n ' ...
     '"partialSidebarLength" = %3.1f \n "fin_platform_extrusion" = %3.1f \n '];
-fprintf(fileID,formatSpec,user_height,shellLength, partialSidebarLength, fin_platform_extrusion);
+fprintf(fileID,formatSpec,user.height,shellLength, partialSidebarLength, fin_platform_extrusion);
+
+fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\thighFin_dimensions.txt','w');
+formatSpec = ['"userHeight" = %3.1f \n "fin_thickness" = %3.1f \n ' ...
+    '"fin_platform_width" = %3.1f \n "fin_platform_height" = %3.1f \n  "fin_platform_extrusion" = %3.1f \n '];
+fprintf(fileID,formatSpec,user.height,fin_thickness, fin_platform_width, fin_platform_height, fin_platform_extrusion);
+
+fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\velcroStrap_dimensions.txt','w');
+formatSpec = '"userHeight" = %3.1f \n ';
+fprintf(fileID,formatSpec,user.height);
 end 

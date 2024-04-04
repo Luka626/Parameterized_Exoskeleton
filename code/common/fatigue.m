@@ -17,7 +17,7 @@ end
 
 stress_max = stresses(2);
 stress_min = stresses(1);
-uts = material_data.ultimate_strength;
+uts = material_data.ultimate;
 
 stress_mean = (stress_max + stress_min)/2;
 stress_alt =  stress_max - stress_min;

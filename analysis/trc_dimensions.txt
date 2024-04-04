@@ -1,0 +1,5 @@
+"userHeight" = 1.5 
+ "shellLength" = 0.1 
+ "partialSidebarLength" = 0.2 
+ "fin_platform_extrusion" = 64.5 
+ 
