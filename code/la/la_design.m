@@ -2,6 +2,7 @@
 function [safety_factors] = la_design(anthro, design_inputs, material_data)
 
 al1100 = material_data("al1100");
+al6061 = material_data("al6061");
 
 % Anthropometry
 user = anthro;
@@ -17,18 +18,17 @@ weight_pulley = 0.11189; %N
     LA_pulley_center = 0.008;%m
     length_dowel_bolt = 0.03; %m, distance from end of dowel pin to centroid of screws
     length_pin = 0.03; %length of dowel pin
-    radius_pin = 0.0035; % m
+    radius_pin = 0.0065; % m %%%change from og 3.5 mm ****
     hip_cuff_distance = 7/8*user.L_thigh; %m
     waist_hip_length = 0.1*user.height;
     LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
 
     
 % INITIAL CONDITIONS
+    h = 0.0188; 
     b = 0.013;
-    h = 0.009;
     ratio_b_h = b/h;
     diameter_bolt = 0.003; %M3 bolt
-
     cost_lowest = [b, h, 900000];
     SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
     count = 0;
@@ -52,15 +52,16 @@ SF = struct(...
         'SF_cyclical_axial_pin', 0, ...
         'SF_cyclical_axial_LA', 0);
 
-while count<2
+while count<5
   
+    radius_pin = b/2; %new addition
     area_cross_section_LA = b*h;
     moment_of_inertia_LA = b*h^3/12;
       
     LA_volume = LA_length*area_cross_section_LA;
     pin_volume = pi*radius_pin^2*length_pin;
     
-    LA_mass = (LA_volume + pin_volume)*al1100.density;
+    LA_mass = (LA_volume + pin_volume)*al6061.density;
     LA_center_of_mass = (length_pin/2)*(radius_pin*2*length_pin) + (length_pin + LA_length/2)*(LA_length*h);
     
     
@@ -74,26 +75,26 @@ while count<2
     % STRESSES
     
     % bending stress
-    force_max_bending= force_max_pulley_y
+    force_max_bending= force_max_pulley_y;
     force_min_bending = force_min_pulley_y;
     
     bending_max_moment_pin = force_max_bending*b_bending/(a_bending)*0.015;
     stress_max_bending_pin = 2.8*32*bending_max_moment_pin/(pi*(2*radius_pin)^3) % 2.8 is theoretical stress concentrion at fillet (connection btwn pin + LA)
     
     bending_max_moment_LA = force_max_bending*b_bending;
-    stress_max_bending_LA = 2.1*(bending_max_moment_LA*(h/2)/moment_of_inertia_LA)*bending_max_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
+    stress_max_bending_LA = 2.1*6*bending_max_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
     
     bending_min_moment_pin = force_min_bending*(LA_length-length_dowel_bolt)/(length_pin/2 + length_dowel_bolt);
     stress_min_bending_pin = 2.8*32*bending_min_moment_pin/(pi*(2*radius_pin)^3); % 2.8 is theoretical stress concentrion at fillet (connection btwn pin + LA)
     
-    bending_min_moment_LA = force_min_bending*(LA_length-length_dowel_bolt);
-    stress_min_bending_LA = 2.1*(bending_min_moment_LA*h/2/moment_of_inertia_LA)*bending_max_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
+    bending_min_moment_LA = force_min_bending*b_bending;
+    stress_min_bending_LA = 2.1*6*bending_min_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
     
-    SF.SF_static_bending_pin = al1100.yield/stress_max_bending_pin;
-    SF.SF_static_bending_LA = al1100.yield/stress_max_bending_LA;
+    SF.SF_static_bending_pin = al6061.yield/stress_max_bending_pin;
+    SF.SF_static_bending_LA = al6061.yield/stress_max_bending_LA;
     
-    SF.SF_cyclical_bending_pin = fatigue([stress_min_bending_pin, stress_max_bending_pin], al1100, false);
-    SF.SF_cyclical_bending_LA = fatigue([stress_min_bending_LA, stress_max_bending_LA], al1100, false);
+    SF.SF_cyclical_bending_pin = fatigue([stress_min_bending_pin, stress_max_bending_pin], al6061, false);
+    SF.SF_cyclical_bending_LA = fatigue([stress_min_bending_LA, stress_max_bending_LA], al6061, false);
     
     % axial stress
     force_max_axial = force_max_pulley_x;
@@ -105,20 +106,20 @@ while count<2
     stress_min_axial_pin = force_min_axial/(area_cross_section_LA)*2.5; %min loading at max stress location
     stress_min_axial_LA = force_min_axial/((h-diameter_bolt)*b)*3.25; %min loading at max stress location
     
-    SF.SF_static_axial_pin = al1100.yield/stress_max_axial_pin; 
-    SF.SF_static_axial_LA = al1100.yield/stress_max_axial_LA;
+    SF.SF_static_axial_pin = al6061.yield/stress_max_axial_pin; 
+    SF.SF_static_axial_LA = al6061.yield/stress_max_axial_LA;
     
-    SF.SF_cyclical_axial_pin = fatigue([stress_min_axial_pin, stress_max_axial_pin], al1100, true); 
-    SF.SF_cyclical_axial_LA = fatigue([stress_min_axial_LA, stress_max_axial_LA], al1100, true);
+    SF.SF_cyclical_axial_pin = fatigue([stress_min_axial_pin, stress_max_axial_pin], al6061, true); 
+    SF.SF_cyclical_axial_LA = fatigue([stress_min_axial_LA, stress_max_axial_LA], al6061, true);
     
     SF    
     SF_list = [SF.SF_static_bending_pin, SF.SF_static_bending_LA, SF.SF_cyclical_bending_pin, SF.SF_cyclical_bending_LA, SF.SF_static_axial_pin, SF.SF_static_axial_LA, SF.SF_cyclical_axial_pin, SF.SF_cyclical_axial_LA];
-    dimensions = [h,b];
+    dimensions = [h,b, radius_pin]
     increase = 0;
     cost = 0;
     for S_F = SF_list
         if S_F < 2.5
-            increase = 1;
+            increase = 1
             cost = cost+1000*(2.5-S_F); %large cost for SF under 2.5
         else 
             cost = cost+ (S_F-2.5); %small cost for SF exceeding 2.5
@@ -144,6 +145,7 @@ while count<2
 end
 
 cost_lowest;
+final_dimensions = [h,b]
 
   %% SAFETY FACTORS:
 
