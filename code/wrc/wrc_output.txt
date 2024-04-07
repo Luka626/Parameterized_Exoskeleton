@@ -1,2 +1,9 @@
-"backplate_thickness"=0.00832085
-"frontplate_height"=0.06445041
+"backplate_thickness"=0.00804463
+"backplate_height"=0.15000000
+"backplate_width"=1.60687500
+"hinge_diameter"=0.02553781
+"hinge_height"=0.02426186
+"frontplate_height"=0.02426186
+"Padding_Area1"=0.00371402
+"Padding_Area2"=0.00371402
+"Padding_Area3"=0.00082534
