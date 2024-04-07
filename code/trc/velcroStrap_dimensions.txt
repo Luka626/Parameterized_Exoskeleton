@@ -1,2 +1,3 @@
-"userHeight" = 1.5 
+"userHeight" = 1615.0 
+ "velcro_inner_radius" = 80.8 
  

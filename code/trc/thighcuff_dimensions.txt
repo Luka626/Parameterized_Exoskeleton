@@ -1,5 +1,6 @@
-"userHeight" = 1.5 
- "shellLength" = 0.1 
- "partialSidebarLength" = 0.2 
- "fin_platform_extrusion" = 52.9 
- 
+"userHeight" = 1615.0 
+ "shellLength" = 123.6 
+ "partialSidebarLength" = 215.7 
+ "shell_outer_radius" = 81.9 
+"shell_inner_radius" = 73.4 
+"fin_platform_extrusion" = 57.0 

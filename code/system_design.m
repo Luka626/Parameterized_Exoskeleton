@@ -7,8 +7,8 @@ end
     design_inputs = configure_design_inputs(user_data, anthro);
     material_data = configure_material_data();
 
-    wrc_safety_factors = wrc_design(anthro, design_inputs, material_data);
-    %la_safety_factors = la_design(anthro, design_inputs, material_data);
+    %wrc_safety_factors = wrc_design(anthro, design_inputs, material_data);
+    la_safety_factors = la_design(anthro, design_inputs, material_data);
     %trc_safety_factors = trc_design(anthro, design_inputs, material_data)
 
     fprintf("System design complete!\n")    
@@ -23,8 +23,8 @@ end
     anthro.height = user_data.height;
     anthro.weight = user_data.weight;
     anthro.age = user_data.age;
-    anthro.waist_circumference = user_data.waist_circumference/100;
-    anthro.waist_radius = (user_data.waist_circumference/100)/(2*pi);
+    anthro.waist_circumference = user_data.circumference/100;
+    anthro.waist_radius = (user_data.circumference/100)/(2*pi);
 
 end
 

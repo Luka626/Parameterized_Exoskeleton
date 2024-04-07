@@ -1,6 +1,6 @@
-"userHeight" = 1.5 
- "fin_thickness" = 0.0 
- "fin_platform_width" = 0.0 
- "fin_platform_height" = 0.1 
-  "fin_platform_extrusion" = 52.9 
+"userHeight" = 1615.0 
+ "fin_hole_radius" = 10.0 
+ "fin_thickness" = 3.0 
+ "fin_platform_width" = 31.9 
+ "fin_platform_height" = 37.5 
  
