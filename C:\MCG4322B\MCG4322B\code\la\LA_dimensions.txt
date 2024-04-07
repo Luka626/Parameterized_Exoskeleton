@@ -1,3 +1,0 @@
-"height" = 0.0 
- "width" = 0.0 
- "length" = -136.2
