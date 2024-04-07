@@ -1,4 +1,5 @@
 function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
+    %% INITIALIZE VALUES 
     hdpe = material_data("hdpe");
     al6061 = material_data("al6061");
 
@@ -10,137 +11,138 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     spring = struct();
     hinge = struct();
 
-    % Anthropometry
+    % Anthropometry %
     user = anthro;
-    user.waist_diameter = 0.580/pi;
 
-    % Force Inputs
+    % Force Inputs %
     spring.x = design_inputs.external_loads.max_force.spring_x_force;
     spring.y = design_inputs.external_loads.max_force.spring_y_force;
 
+    % For parametrization %
+    best_configuration = struct();
+    cost = intmax;
+    cost_threshold = 0.001;
+    num_iterations = 0;
+    MAX_ITER = 10000;
+    GOAL_SF = 2.5;
+
+    % Parameterized Dimensions %
+    backplate.thickness = 0.0075;       % PARAMETER: [0.003175, _]      %
+    frontplate.height = 0.02;           % PARAMETER: [0.03, _]          %
+    adjustment.thickness = 0.00635;     % PARAMETER: [0.003175, _]      %         
+    hinge.diameter = 0.008;             % PARAMETER: [0.00157, _]       %
+    padding.area = 0.01;                % PARAMETER: [_, 2*bplate_area] %
+
     %% MASS CALCULATIONS
+    % Anthropometrized/Constant Dimensions%
+    backplate.height = 0.15*user.height;                    % Func. of user height: 0.15 exp. determined %
+    backplate.width = 0.75 * user.waist_radius*2*pi / 4;    % Func. assumes nominal 75% back coverage %
+    belt.width = user.waist_radius*2*pi / 10;               % Span of user's waist circumference %
+    adjustment.length = 0.04;                               % CONST, to allow for sizing options
+    frontplate.thickness = 0.04;                            % CONST, agreed upon with LA %
+    belt.release_radius = 0.09;                             % CONST, manufacturer spec.
+    belt.roller_radius = 0.06;                              % CONST, manufacturer spec.
+    frontplate.load = spring.y;                             % From frontplate
+    padding.pressure = design_inputs.pain_pressure;         % From requirements
 
-    % BACKPLATE %
-    backplate.height = 0.30;
-    backplate.thickness = 0.0075;
+    %% PARAMETRIZATION LOOP
 
-    % Assuming 2 backplates cover 75% of the width of the user's back
-    backplate.width = 0.75 * user.waist_diameter*pi / 4;
+    while (cost > cost_threshold && num_iterations <= MAX_ITER)
+    
+        % Derived Dimensions %
+        frontplate.length = user.waist_radius*2*pi / 4 - belt.width/2; % Leave room for belt width %
+        frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length-frontplate.height)); % derived from simplified geometrty %
+        adjustment.height = backplate.height/15;
+        hinge.length = frontplate.height;
+        belt.tension = design_inputs.strength*belt.release_radius/belt.roller_radius;
+    
+        %% MASS ANALYSIS
+        wrc = struct(...
+            "backplate", backplate, ...
+            "frontplate", frontplate, ...
+            "adjustment", adjustment, ...
+            "hinge", hinge, ...
+            "padding", padding);  
+        [backplate.mass, frontplate.mass, adjustment.mass, hinge.mass] = compute_masses(wrc, hdpe, al6061);
+    
+        %% BACKPLATE ANALYSIS
+        components = struct(...
+            "backplate", backplate, ...
+            "padding", padding, ...
+            "adjustment", adjustment, ...
+            "frontplate", frontplate);
+        [padding.SF, backplate.SF] = compute_backplate_SF(components, spring, user, hdpe);
+    
+        %% ADJUSTMENT ANALYSIS
+        components = struct(...
+            "backplate", backplate, ...
+            "adjustment", adjustment);
+        [adjustment.SF] = compute_adjustment_SF(components, user, al6061);
+    
+        %% FRONTPLATE ANALYSIS %%
+        components = struct(...
+            "belt", belt, ...
+            "frontplate", frontplate, ...
+            "hinge", hinge);
+        [hinge.SF, frontplate.SF] = compute_frontplate_SF(components, user, al6061, hdpe);
+   
+        %% SAFETY FACTORS, DIMENSIONS:
+    
+        % safety factors to log %
+        config.safety_factors = struct(...
+            'backplate_SF', backplate.SF, ...
+            'frontplate_SF', frontplate.SF, ...
+            'adjustment_SF', adjustment.SF, ...
+            'hinge_SF', hinge.SF, ...
+            'padding_SF', padding.SF);
+        config.cost = compute_cost(config.safety_factors);
 
-    backplate.volume = backplate.height * backplate.thickness * backplate.width;
-    backplate.mass = backplate.volume * hdpe.density; %kg
+        % dimensions to log %
+        config.dimensions = struct(...
+            'backplate_thickness', backplate.thickness, ...
+            'frontplate_height', frontplate.height);
 
+        %% LOOP
+        % Check if we found the best configuration so far %
+        if (config.cost < cost)
+            best_configuration = config;
+            cost = config.cost;
+        end
 
-    % FRONTPLATE %
-    belt.width = user.waist_diameter*pi / 10;
-    frontplate.height = 0.04;
-    frontplate.length = user.waist_diameter*pi / 4 - belt.width/2;
+        % Increment/Decrement parameter based on SF %
+        kick = cost/10000;
+        if (backplate.SF < GOAL_SF)
+            backplate.thickness = backplate.thickness + backplate.thickness*kick;
+        else
+            backplate.thickness = backplate.thickness - backplate.thickness*kick;
+        end
 
-    % Assuming the consistent 40mm thickness is load-bearing
-    frontplate.thickness = 0.04;
+        if (frontplate.SF < GOAL_SF)
+            frontplate.height = frontplate.height + frontplate.height*kick;
+        else
+            frontplate.height = frontplate.height - frontplate.height*kick;
+        end
 
-    % Thickness increases with taper until dowel pin insertion
-    frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length-frontplate.height));
+        if (adjustment.SF < GOAL_SF)
+            adjustment.thickness = adjustment.thickness + adjustment.thickness*kick;
+        else
+            adjustment.thickness = adjustment.thickness - adjustment.thickness*kick;
+        end
+        if (hinge.SF < GOAL_SF)
+            hinge.diameter = hinge.diameter + hinge.diameter*kick;
+        else
+            hinge.diameter = hinge.diameter - hinge.diameter*kick;
+        end
+        if (padding.SF < GOAL_SF)
+            padding.area = padding.area + padding.area*kick;
+        else
+            padding.area = padding.area - padding.area*kick;
+        end
 
-    frontplate.volume = frontplate.height*frontplate.length*frontplate.thickness_total;
-    frontplate.mass = frontplate.volume*hdpe.density;
+        num_iterations = num_iterations + 1;
+    end
 
-
-    % ADJUSTMENT %
-    adjustment.height = 0.02;
-    adjustment.length = 0.04;
-    adjustment.thickness = 0.00635;
-    adjustment.volume = adjustment.height*adjustment.length*adjustment.thickness;
-    adjustment.mass = adjustment.volume*al6061.density;
-
-    % HINGE %
-    hinge.diameter = 0.008;
-    hinge.area = (pi/4)*hinge.diameter^2;
-    hinge.length = frontplate.height;
-    hinge.volume = hinge.area*hinge.length;
-    hinge.mass = hinge.volume*al6061.density;
-
-
-    %% BACK PLATE CALCULATIONS
-    %Padding:
-    backplate.friction = spring.y + backplate.mass*2 + adjustment.mass*2 + frontplate.mass*2;
-    backplate.load = spring.y*(user.waist_diameter/2+0.160) / (-2*backplate.height/3);
-
-    padding.area_total = backplate.load/design_inputs.pain_pressure;
-
-    %assuming 85% of the back plate is covered in padding:
-    padding.SF = (2*backplate.volume/backplate.height)/padding.area_total;
-
-    %Back plate thickness:
-    backplate.M = backplate.load*backplate.height/2;
-    backplate.c = backplate.thickness/2;
-    backplate.I = backplate.thickness^3*backplate.width/12;
-    backplate.bending = backplate.M*backplate.c/backplate.I;
-
-    backplate.SF =  hdpe.bending/backplate.bending;
-
-    %% ADJUSTMENT CALCULATIONS
-    %load comes from donning and doffing, assumign someone applies 200N of
-    %force separating the back plates
-    adjustment.load = 200;
-    adjustment.moment = adjustment.load*(adjustment.thickness/2 + backplate.thickness/2);
-    adjustment.sigma_bending = adjustment.moment * (adjustment.thickness/2) / (adjustment.height*adjustment.thickness^3/12);
-    adjustment.sigma_axial = adjustment.load/adjustment.thickness*adjustment.height;
-    adjustment.sigma_a_max = adjustment.sigma_bending+adjustment.sigma_axial;
-    adjustment.SF = al6061.yield / adjustment.sigma_a_max;
-
-    %future work: integrate this adjustment load case with the stifness and
-    %geometry <- which changes
-    %of the back plate to form a parametrization loop
-
-    %% FRONT PLATE CALCULATIONS
-    frontplate.load = 1.885*30;
-    belt.release_radius = 0.09;
-    belt.roller_radius = 0.06;
-    belt.tension = design_inputs.strength*belt.release_radius/belt.roller_radius;
-
-    % HINGE %
-    hinge.reaction_x = -1*belt.tension;
-    hinge.reaction_y = 0;
-    hinge.reaction_z = frontplate.mass*9.81+frontplate.load;
-    hinge.m_x = -(frontplate.mass*9.81*user.waist_diameter/2*(2/3) + frontplate.load*user.waist_diameter/2);
-    hinge.m_y = 0;
-    hinge.m_z = -belt.tension*user.waist_diameter/2;
-
-    hinge.sigma_a = hinge.reaction_z/hinge.area;
-    hinge.sigma_bending = (hinge.m_x*hinge.diameter/2)/((hinge.diameter/2)^4*pi/4);
-    hinge.tau = 4*hinge.reaction_x/(3*hinge.area);
-    hinge.sigma_a_max = hinge.sigma_a - hinge.sigma_bending;
-    hinge.tau_torsion = (hinge.m_z)*(hinge.diameter/2)/((pi/2)*(hinge.diameter/2)^4);
-
-    hinge.von_mises = sqrt(hinge.sigma_a_max^2 + 3*(hinge.tau_torsion+hinge.tau)^2);
-    hinge.SF = al6061.yield/hinge.von_mises;
-
-    % FRONT PLATE %
-    %assuming peak loading occurs at interface with hinge joint
-    frontplate.reaction_x = hinge.reaction_x;
-    frontplate.reaction_y = hinge.reaction_y;
-    frontplate.reaction_z = hinge.reaction_z;
-    frontplate.m_x = hinge.m_x;
-    frontplate.m_y = 0;
-    frontplate.m_z = hinge.m_z;
-
-    frontplate.sigma_a = frontplate.reaction_z/(frontplate.height*frontplate.thickness);
-    frontplate.sigma_bending = (frontplate.m_x*frontplate.height/2)/((frontplate.thickness*frontplate.height^3)/12);
-    frontplate.tau = 3*frontplate.reaction_x/(2*frontplate.height*frontplate.thickness);
-    frontplate.sigma_a_max = frontplate.sigma_a - frontplate.sigma_bending;
-    frontplate.tau_torsion = (frontplate.m_z)*(frontplate.height/2)/((frontplate.thickness^3*frontplate.height)/12);
-    frontplate.tau_max = frontplate.tau+frontplate.tau_torsion;
-
-    frontplate.von_mises = sqrt(frontplate.sigma_a_max^2 + 3*frontplate.tau_max^2);
-    frontplate.SF = hdpe.yield/frontplate.von_mises;
-
-    %% SAFETY FACTORS:
-
-    safety_factors = struct(...
-        'backplate_SF', backplate.SF, ...
-        'frontplate_SF', frontplate.SF, ...
-        'adjustment_SF', adjustment.SF, ...
-        'hinge_SF', hinge.SF, ...
-        'padding_SF', padding.SF);
+    log_dimensions("code/wrc/wrc_output.txt", best_configuration.dimensions);
+    safety_factors = best_configuration.safety_factors
+    num_iterations
 end

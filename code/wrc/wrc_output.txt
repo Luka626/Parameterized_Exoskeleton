@@ -1,0 +1,2 @@
+"backplate_thickness"=0.00832085
+"frontplate_height"=0.06445041
