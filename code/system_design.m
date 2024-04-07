@@ -20,7 +20,7 @@ arguments
 end
 
     anthro = struct();
-    anthro.height = user_data.height;
+    anthro.height = user_data.height/100;
     anthro.weight = user_data.weight;
     anthro.age = user_data.age;
     anthro.waist_circumference = user_data.waist_circumference/100;

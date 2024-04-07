@@ -14,7 +14,7 @@ end
 
         % penalize any safety factors below requirment %
         if value < 0
-            value = value * 200;
+            value = value * 20;
         end
 
         total_cost = total_cost + abs(value);

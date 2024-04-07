@@ -21,7 +21,7 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     % For parametrization %
     best_configuration = struct();
     cost = intmax;
-    cost_threshold = 0.001;
+    cost_threshold = 0.05;
     num_iterations = 0;
     MAX_ITER = 10000;
     GOAL_SF = 2.5;
@@ -31,18 +31,18 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     frontplate.height = 0.02;           % PARAMETER: [0.03, _]          %
     adjustment.thickness = 0.00635;     % PARAMETER: [0.003175, _]      %         
     hinge.diameter = 0.008;             % PARAMETER: [0.00157, _]       %
-    padding.area = 0.01;                % PARAMETER: [_, 2*bplate_area] %
+    padding.area = 0.001;                % PARAMETER: [_, 2*bplate_area] %
 
     %% MASS CALCULATIONS
     % Anthropometrized/Constant Dimensions%
-    backplate.height = 0.15*user.height;                    % Func. of user height: 0.15 exp. determined %
-    backplate.width = 0.75 * user.waist_radius*2*pi / 4;    % Func. assumes nominal 75% back coverage %
+    backplate.height = 0.15*user.height;                     % Func. of user height: 0.15 exp. determined %
+    backplate.width = 3*user.waist_circumference/10;        % Func. assumes nominal 75% back coverage %
     belt.width = user.waist_radius*2*pi / 10;               % Span of user's waist circumference %
-    adjustment.length = 0.012;                               % CONST, to allow for sizing options
-    frontplate.thickness = 0.20;                            % CONST, agreed upon with LA %
+    adjustment.length = user.waist_radius*2/5;              % CONST, to allow for sizing options
+    frontplate.thickness = 0.02;                            % CONST, agreed upon with LA %
     belt.release_radius = 0.09;                             % CONST, manufacturer spec.
     belt.roller_radius = 0.06;                              % CONST, manufacturer spec.
-    frontplate.load = spring.y;                             % From frontplate
+    frontplate.load = -1*2*spring.y;                        % From frontplate
     padding.pressure = design_inputs.pain_pressure;         % From requirements
 
     %% PARAMETRIZATION LOOP
@@ -50,9 +50,9 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
         % Derived Dimensions %
-        frontplate.length = user.waist_radius*2*pi / 4 - belt.width/2; % Leave room for belt width %
+        frontplate.length = user.waist_radius*2*pi / 4 - belt.width/4; % Leave room for belt width %
         frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length-frontplate.height)); % derived from simplified geometrty %
-        adjustment.height = backplate.height/15;
+        adjustment.height = backplate.height/10;
         hinge.length = frontplate.height;
         belt.tension = design_inputs.strength*belt.release_radius/belt.roller_radius;
     
@@ -99,17 +99,18 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
 
         % dimensions to log %
         config.dimensions = struct(...
-            'backplate_thickness', backplate.thickness, ...
-            'backplate_height', backplate.height, ...
-            'backplate_width', backplate.width, ...
-            'hinge_diameter', hinge.diameter, ...
-            'hinge_height', hinge.length, ...
-            'frontplate_height', frontplate.height, ...
-            'frontplate_thickness', frontplate.thickness, ...
-            'adjustment_thickness', adjustment.thickness, ...
-            'Padding_Area1', 0.45*padding.area/2, ...
-            'Padding_Area2', 0.45*padding.area/2, ...
-            'Padding_Area3', 0.1*padding.area/2);
+            'backplate_thickness', backplate.thickness*1000, ...
+            'backplate_height', backplate.height*1000, ...
+            'backplate_width', backplate.width*1000, ...
+            'hinge_diameter', hinge.diameter*1000, ...
+            'hinge_height', hinge.length*1000, ...
+            'frontplate_height', frontplate.height*1000, ...
+            'frontplate_thickness', frontplate.thickness*1000, ...
+            'adjustment_thickness', adjustment.thickness*1000, ...
+            'adjustment_height', adjustment.height*1000, ...
+            'Padding_Area1', 0.45*3*padding.area*1000*1000, ...
+            'Padding_Area2', 0.45*3*padding.area*1000*1000, ...
+            'Padding_Area3', 0.1*3*padding.area*1000*1000);
 
         %% LOOP
         % Check if we found the best configuration so far %
@@ -119,7 +120,7 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
         end
 
         % Increment/Decrement parameter based on SF %
-        kick = cost/10000;
+        kick = (1/100)*sqrt(cost);
         if (backplate.SF < GOAL_SF)
             backplate.thickness = backplate.thickness + backplate.thickness*kick;
         else

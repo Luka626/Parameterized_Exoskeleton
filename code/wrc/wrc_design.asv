@@ -21,7 +21,7 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     % For parametrization %
     best_configuration = struct();
     cost = intmax;
-    cost_threshold = 0.001;
+    cost_threshold = 0.005;
     num_iterations = 0;
     MAX_ITER = 10000;
     GOAL_SF = 2.5;
@@ -35,14 +35,14 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
 
     %% MASS CALCULATIONS
     % Anthropometrized/Constant Dimensions%
-    backplate.height = 0.15*user.height;                    % Func. of user height: 0.15 exp. determined %
-    backplate.width = 0.75 * user.waist_radius*2*pi / 4;    % Func. assumes nominal 75% back coverage %
+    backplate.height = 0.1*user.height;                     % Func. of user height: 0.15 exp. determined %
+    backplate.width = 3*user.waist_circumference/10;        % Func. assumes nominal 75% back coverage %
     belt.width = user.waist_radius*2*pi / 10;               % Span of user's waist circumference %
-    adjustment.length = 0.012;                               % CONST, to allow for sizing options
-    frontplate.thickness = 0.04;                            % CONST, agreed upon with LA %
+    adjustment.length = user.waist_radius*2/5;              % CONST, to allow for sizing options
+    frontplate.thickness = 0.10;                            % CONST, agreed upon with LA %
     belt.release_radius = 0.09;                             % CONST, manufacturer spec.
     belt.roller_radius = 0.06;                              % CONST, manufacturer spec.
-    frontplate.load = spring.y;                             % From frontplate
+    frontplate.load = -1*2*spring.y;                        % From frontplate
     padding.pressure = design_inputs.pain_pressure;         % From requirements
 
     %% PARAMETRIZATION LOOP
@@ -52,7 +52,7 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
         % Derived Dimensions %
         frontplate.length = user.waist_radius*2*pi / 4 - belt.width/2; % Leave room for belt width %
         frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length-frontplate.height)); % derived from simplified geometrty %
-        adjustment.height = backplate.height/15;
+        adjustment.height = backplate.height/10;
         hinge.length = frontplate.height;
         belt.tension = design_inputs.strength*belt.release_radius/belt.roller_radius;
     
@@ -105,9 +105,12 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
             'hinge_diameter', hinge.diameter, ...
             'hinge_height', hinge.length, ...
             'frontplate_height', frontplate.height, ...
-            'Padding_Area1', padding.area/2, ...
-            'Padding_Area2', padding.area_total, ...
-            'Padding_Area3', padding.area_total);
+            'frontplate_thickness', frontplate.thickness, ...
+            'adjustment_thickness', adjustment.thickness, ...
+            'adjustment_height', adjustment.height, ...
+            'Padding_Area1', 0.45*padding.area/2, ...
+            'Padding_Area2', 0.45*padding.area/2, ...
+            'Padding_Area3', 0.1*padding.area/2);
 
         %% LOOP
         % Check if we found the best configuration so far %
