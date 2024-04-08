@@ -1,6 +1,6 @@
 
-function [safety_factors] = la_design(anthro, design_inputs, material_data)
-%% INITIALIZE VALUES
+function [safety_factors] = la_design(app, anthro, design_inputs, material_data)
+
 al1100 = material_data("al1100");
 al6061 = material_data("al6061");
 
@@ -22,6 +22,10 @@ weight_pulley = 0.11189; %N
     waist_hip_length = 0.1*user.height;
     LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
 
+
+log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
+log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
+log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
 
 %Pulley reaction forces
 spring_min_force = design_inputs.external_loads.min_force.spring_force;

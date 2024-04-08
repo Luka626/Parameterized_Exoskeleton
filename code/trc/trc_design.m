@@ -1,4 +1,4 @@
-function [safety_factors] = trc_design(anthro, design_inputs, material_data)
+function [safety_factors] = trc_design(app, anthro, design_inputs, material_data)
 hdpe = material_data("hdpe");
 
 % ANTHROPOMETRY 
@@ -146,6 +146,17 @@ formatSpec = ['"userHeight" = %3.1f \n "fin_hole_radius" = %3.1f \n "fin_thickne
 fprintf(fileID,formatSpec,user.height*1000,fin_hole_radius*1000, fin_thickness*1000,  fin_platform_width*1000, fin_platform_height*1000);
 
 fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\velcroStrap_dimensions.txt','w');
-formatSpec = '"userHeight" = %3.1f \n "velcro_inner_radius" = %3.1f \n ';
-fprintf(fileID,formatSpec,user.height*1000, velcro_inner_radius*1000);
+formatSpec = '"userHeight" = %3.1f \n ';
+fprintf(fileID,formatSpec,user.height);
+
+log_to_output(app, sprintf("[trc_design] TRC parametrization complete."));
+log_to_output(app, sprintf("[trc_design] Final values: "));
+log_to_output(app, sprintf("[trc_design]     shell_outer_radius:    %f8 m", shell_outer_radius));
+log_to_output(app, sprintf("[trc_design]     fin_platform_height:   %f8 m", fin_platform_height));
+log_to_output(app, sprintf("[trc_design] Final safety factors: "));
+log_to_output(app, sprintf("[trc_design]     skin_pressure_SF:  %f2", safety_factors.skin_pressure_SF));
+log_to_output(app, sprintf("[trc_design]     bending_SF: %f2", safety_factors.bending_SF));
+log_to_output(app, sprintf("[trc_design]     fin_cylical_SF: %f2", safety_factors.fin_cylical_SF));
+log_to_output(app, sprintf("[trc_design] TRC design completed successfully in %d iterations.", count));
+log_to_output(app, sprintf("[trc_design] Equations exported to: 'C:/MCG4322b/Group4/code/trc/trc_output.txt'"));
 end 

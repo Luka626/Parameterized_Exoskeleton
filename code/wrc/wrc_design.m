@@ -1,4 +1,4 @@
-function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
+function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data)
     %% INITIALIZE VALUES 
     hdpe = material_data("hdpe");
     al6061 = material_data("al6061");
@@ -21,22 +21,35 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
     % For parametrization %
     best_configuration = struct();
     cost = intmax;
-    cost_threshold = 0.05;
+    cost_threshold = 0.001;
     num_iterations = 0;
-    MAX_ITER = 10000;
+    MAX_ITER = 50;
     GOAL_SF = 2.5;
 
+
     % Parameterized Dimensions %
-    backplate.thickness = 0.0075;       % PARAMETER: [0.003175, _]      %
-    frontplate.height = 0.02;           % PARAMETER: [0.03, _]          %
-    adjustment.thickness = 0.00635;     % PARAMETER: [0.003175, _]      %         
-    hinge.diameter = 0.008;             % PARAMETER: [0.00157, _]       %
-    padding.area = 0.001;                % PARAMETER: [_, 2*bplate_area] %
+    backplate.thickness = 0.0075;     % PARAMETER: [0.003175,   0.0254]    %
+    frontplate.height = 0.02;         % PARAMETER: [0.03,       0.030]    %
+    adjustment.thickness = 0.00635;   % PARAMETER: [0.003175,   0.0254]    %         
+    hinge.diameter = 0.008;           % PARAMETER: [0.00157,    0.015]    %
+    padding.area = 0.001;             % PARAMETER: [0.0001,     0.005] %
+    log_to_output(app, sprintf("[wrc_design] Initializing WRC parametrization: "));
+    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %f8 m", backplate.thickness));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %f8 m", frontplate.height));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %f8 m", adjustment.thickness));
+    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %f8 m", hinge.diameter));
+    log_to_output(app, sprintf("[wrc_design]     padding_area:          %f8 m", padding.area));
+    %[backplate.thickness, frontplate.height, adjustment.thickness, hinge.diameter, padding.area] = randomize_parameters();
+
+    % For plotting %
+    iterations = [];
+    costs = [];
 
     %% MASS CALCULATIONS
     % Anthropometrized/Constant Dimensions%
+    log_to_output(app, sprintf("[wrc_design] Deriving anthropometrized and constant dimensions."));
     backplate.height = 0.15*user.height;                     % Func. of user height: 0.15 exp. determined %
-    backplate.width = 3*user.waist_circumference/10;        % Func. assumes nominal 75% back coverage %
+    backplate.width = user.waist_circumference/10;        % Func. assumes nominal 75% back coverage %
     belt.width = user.waist_radius*2*pi / 10;               % Span of user's waist circumference %
     adjustment.length = user.waist_radius*2/5;              % CONST, to allow for sizing options
     frontplate.thickness = 0.02;                            % CONST, agreed upon with LA %
@@ -120,7 +133,7 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
         end
 
         % Increment/Decrement parameter based on SF %
-        kick = (1/100)*sqrt(cost);
+        kick = (1/20)*sqrt(config.cost);
         if (backplate.SF < GOAL_SF)
             backplate.thickness = backplate.thickness + backplate.thickness*kick;
         else
@@ -149,10 +162,44 @@ function [safety_factors] = wrc_design(anthro, design_inputs, material_data)
             padding.area = padding.area - padding.area*kick;
         end
 
-        num_iterations = num_iterations + 1;
+        num_iterations = num_iterations + 1;       
+
+        
+        %iterations  = [iterations;  num_iterations];
+        %costs       = [costs;   config.cost];
     end
 
     log_dimensions("code/wrc/wrc_output.txt", best_configuration.dimensions);
-    safety_factors = best_configuration.safety_factors
-    num_iterations
+    safety_factors = best_configuration.safety_factors;
+    %plot(iterations, costs)
+
+    log_to_output(app, sprintf("[wrc_design] WRC parameterization complete."));
+    log_to_output(app, sprintf("[wrc_design] Final values: "));
+    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %f8 m", backplate.thickness));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %f8 m", frontplate.height));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %f8 m", adjustment.thickness));
+    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %f8 m", hinge.diameter));
+    log_to_output(app, sprintf("[wrc_design]     padding_area:          %f8 m", padding.area));
+    log_to_output(app, sprintf("[wrc_design] Final safety factors: "));
+    log_to_output(app, sprintf("[wrc_design]     backplate_SF:  %f2", best_configuration.safety_factors.backplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_SF: %f2", best_configuration.safety_factors.frontplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_SF: %f2", best_configuration.safety_factors.adjustment_SF));
+    log_to_output(app, sprintf("[wrc_design]     hinge_SF:      %f2", best_configuration.safety_factors.hinge_SF));
+    log_to_output(app, sprintf("[wrc_design]     padding_SF:    %f2", best_configuration.safety_factors.padding_SF));
+    log_to_output(app, sprintf("[wrc_design] WRC design completed successfully in %d iterations.", num_iterations));
+    log_to_output(app, sprintf("[wrc_design] Equations exported to: 'C:/MCG4322b/Group4/code/wrc/wrc_output.txt'"));
 end
+
+function [backplate_thickness, frontplate_height, adjustment_thickness, hinge_diameter, padding_area] = randomize_parameters()
+    backplate_thickness = 0.003175 + (0.0254-0.003175)*rand();
+    frontplate_height = 0.03 + (0.030-0.03)*rand();
+    adjustment_thickness = 0.003175 + (0.0254-0.003175)*rand();
+    hinge_diameter = 0.00157 + (0.015-0.00157)*rand();
+    padding_area = 0.001 + (0.005-0.001)*rand();
+end
+
+    %backplate.thickness = 0.0075;     % PARAMETER: [0.003175,   0.0254]    %
+    %frontplate.height = 0.02;         % PARAMETER: [0.03,       0.030]    %
+    %adjustment.thickness = 0.00635;   % PARAMETER: [0.003175,   0.0254]    %         
+    %hinge.diameter = 0.008;           % PARAMETER: [0.00157,    0.015]    %
+    %padding.area = 0.001;             % PARAMETER: [0.0001,     0.005] %

@@ -1,35 +1,45 @@
-function [anthro, design_inputs, material_data] = system_design(user_data)
+function [anthro, design_inputs, material_data] = system_design(app)
+
+    log_to_output(app, sprintf("[system_design] Received user data."))
+    log_to_output(app, sprintf("[system_design] Deriving anthropometric data."))
+    anthro = configure_anthropometry(app, app.user_data);
+    log_to_output(app, sprintf("[system_design] Fetching design requirements."))
+    design_inputs = configure_design_inputs(app, app.user_data, anthro);
+    log_to_output(app, sprintf("[system_design] Querying material database:"))
+    material_data = configure_material_data(app);
+    log_to_output(app, sprintf("[material_db]     Accessed al6061 data."))
+    log_to_output(app, sprintf("[material_db]     Accessed al1100 data."))
+    log_to_output(app, sprintf("[material_db]     Accessed hdpe data."))
+
+    log_to_output(app, sprintf("[system_design] Initiating WRC, LA, TRC analysis."))
+    wrc_safety_factors = wrc_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from WRC [1/3]."))
+    la_safety_factors = la_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from LA [2/3]."))
+    trc_safety_factors = trc_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from TRC [3/3]."))
+    
+    log_to_output(app, sprintf("[system_design] System design complete."))   
+end
+
+function [anthro] = configure_anthropometry(app, user_data)
 arguments
+    app
     user_data (1,1) struct
 end
-
-    anthro = configure_anthropometry(user_data);
-    design_inputs = configure_design_inputs(user_data, anthro);
-    material_data = configure_material_data();
-
-    %wrc_safety_factors = wrc_design(anthro, design_inputs, material_data);
-    la_safety_factors = la_design(anthro, design_inputs, material_data);
-    %trc_safety_factors = trc_design(anthro, design_inputs, material_data)
-
-    fprintf("System design complete!\n")    
-end
-
-function [anthro] = configure_anthropometry(user_data)
-arguments
-    user_data (1,1) struct
-end
-
     anthro = struct();
     anthro.height = user_data.height/100;
     anthro.weight = user_data.weight;
     anthro.age = user_data.age;
-    anthro.waist_circumference = user_data.circumference/100;
-    anthro.waist_radius = (user_data.circumference/100)/(2*pi);
+    anthro.waist_circumference = user_data.waist_circumference/100;
+    anthro.waist_radius = (user_data.waist_circumference/100)/(2*pi);
+    log_to_output(app, sprintf("[configure_anthropometry] Anthropometric modelling complete."))
 
 end
 
-function [design_inputs] = configure_design_inputs(user_data, anthro)
+function [design_inputs] = configure_design_inputs(app, user_data, anthro)
 arguments
+    app
     user_data (1,1) struct
     anthro (1,1) struct
 
@@ -42,7 +52,7 @@ end
 
 end
 
-function [material_data] = configure_material_data()
+function [material_data] = configure_material_data(app)
    
     al1100 = struct( ...
         'density', 2710, ...
@@ -64,10 +74,4 @@ function [material_data] = configure_material_data()
     
     material_data = dictionary("hdpe",hdpe, "al6061", al6061, "al1100", al1100);
 
-
-
-      % usage:
-    % [design_inputs, material_data] = system_design(user_data);
-    % trc_material = material_data("al1100");
-    % trc_material.density 
 end

@@ -10,14 +10,14 @@ end
     total_cost = 0;
     for comp_index=1:numel(components)
         sf = safety_factors.(components{comp_index});
-        value = sf - GOAL_SF * weights(comp_index);
+        value = (sf - GOAL_SF * weights(comp_index))^2;
 
         % penalize any safety factors below requirment %
         if value < 0
-            value = value * 20;
+            value = value * 200;
         end
 
-        total_cost = total_cost + abs(value);
+        total_cost = total_cost + value;
     end
     weighted_average_cost = total_cost / numel(components);
 end
