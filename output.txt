@@ -1,0 +1,211 @@
+[app] See C:/MCG4322b/Group4/REAME.txt for more info.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.00 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Accessing material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] Initiating WRC, LA, TRC analysis.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[system_design] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[system_design]     Accessed al6061 data.
+[system_design]     Accessed al1100 data.
+[system_design]     Accessed hdpe data.
+[system_design] Initiating WRC, LA, TRC analysis.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[configure_anthropometry] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[configure_anthropometry] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[configure_anthropometry] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[material_db]     Accessed al6061 data.
+[material_db]     Accessed al1100 data.
+[material_db]     Accessed hdpe data.
+[system_design] Initiating WRC, LA, TRC analysis.
+[system_design] System design complete.
+[app] User data received: 
+[app]    Height = 180.0 cm
+[app]    Weight = 85.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 100.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[configure_anthropometry] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[material_db]     Accessed al6061 data.
+[material_db]     Accessed al1100 data.
+[material_db]     Accessed hdpe data.
+[system_design] Initiating WRC, LA, TRC analysis.
+[system_design] System design complete.
