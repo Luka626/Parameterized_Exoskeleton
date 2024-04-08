@@ -33,9 +33,9 @@ weight_pulley = 0.11189; %N
     SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
     count = 0;
 
-log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
-log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
-log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
+log_to_output(app, sprintf("[la_design] Initializing parametrization: "));
+log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", backplate.thickness));
+log_to_output(app, sprintf("[la_design]     frontplate_height:     %f8 m", frontplate.height));
 
 %Pulley reaction forces
 spring_min_force = design_inputs.external_loads.min_force.spring_force;
@@ -72,7 +72,7 @@ while count<5
     % Deflection 
     a_bending = length_pin/2 + length_dowel_bolt; %find better name?
     L_bending = LA_length + LA_pulley_center + length_pin/2; %find better name?
-    b_bending = L_bending - a_bending; %find better name?
+    b_bending = L_bending - a_bending %find better name?
     
     deflection_max = force_max_pulley_y*b_bending^2*L_bending/(3*al1100.modulus*moment_of_inertia_LA);
     
@@ -83,7 +83,7 @@ while count<5
     force_min_bending = force_min_pulley_y;
     
     bending_max_moment_pin = force_max_bending*b_bending/(a_bending)*0.015;
-    stress_max_bending_pin = 2.8*32*bending_max_moment_pin/(pi*(2*radius_pin)^3); % 2.8 is theoretical stress concentrion at fillet (connection btwn pin + LA)
+    stress_max_bending_pin = 2.8*32*bending_max_moment_pin/(pi*(2*radius_pin)^3) % 2.8 is theoretical stress concentrion at fillet (connection btwn pin + LA)
     
     bending_max_moment_LA = force_max_bending*b_bending;
     stress_max_bending_LA = 2.1*6*bending_max_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
@@ -116,14 +116,14 @@ while count<5
     SF.SF_cyclical_axial_pin = fatigue([stress_min_axial_pin, stress_max_axial_pin], al6061, true); 
     SF.SF_cyclical_axial_LA = fatigue([stress_min_axial_LA, stress_max_axial_LA], al6061, true);
     
-    
+    SF    
     SF_list = [SF.SF_static_bending_pin, SF.SF_static_bending_LA, SF.SF_cyclical_bending_pin, SF.SF_cyclical_bending_LA, SF.SF_static_axial_pin, SF.SF_static_axial_LA, SF.SF_cyclical_axial_pin, SF.SF_cyclical_axial_LA];
-    dimensions = [h,b, radius_pin];
+    dimensions = [h,b, radius_pin]
     increase = 0;
     cost = 0;
     for S_F = SF_list
         if S_F < 2.5
-            increase = 1;
+            increase = 1
             cost = cost+1000*(2.5-S_F); %large cost for SF under 2.5
         else 
             cost = cost+ (S_F-2.5); %small cost for SF exceeding 2.5
@@ -149,7 +149,7 @@ while count<5
 end
 
 cost_lowest;
-final_dimensions = [h,b];
+final_dimensions = [h,b]
 
   %% SAFETY FACTORS:
 
@@ -177,23 +177,6 @@ final_dimensions = [h,b];
 fileID = fopen('C:\MCG4322B\MCG4322B\code\la\LA_dimensions.txt','w');
 formatSpec = '"height" = %3.1f \n "width" = %3.1f \n "length" = %3.1f';
 fprintf(fileID,formatSpec,b, h, LA_length);
-
-
-log_to_output(app, sprintf("[la_design] LA parameterization complete."));
-log_to_output(app, sprintf("[la_design] Final values: "));
-log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
-log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
-log_to_output(app, sprintf("[la_design] Final safety factors: "));
-log_to_output(app, sprintf("[la_design]     pin_static_bending_SF:  %f2", safety_factors.pin_static_bending_SF));
-log_to_output(app, sprintf("[la_design]     LA_static_bending_SF:   %f2", safety_factors.LA_static_bending_SF));
-log_to_output(app, sprintf("[la_design]     pin_cyclical_bending_SF:%f2", safety_factors.pin_cyclical_bending_SF));
-log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF: %f2", safety_factors.LA_cyclical_bending_SF));
-log_to_output(app, sprintf("[la_design]     pin_static_axial_SF:    %f2", safety_factors.pin_static_axial_SF));
-log_to_output(app, sprintf("[la_design]     LA_static_axial_SF:     %f2", safety_factors.LA_static_axial_SF));
-log_to_output(app, sprintf("[la_design]     pin_cyclical_axial_SF:  %f2", safety_factors.pin_cyclical_axial_SF));
-log_to_output(app, sprintf("[la_design]     LA_cyclical_axial_SF:   %f2", safety_factors.LA_cyclical_axial_SF));
-log_to_output(app, sprintf("[la_design] LA design completed successfully in %d iterations.", count));
-log_to_output(app, sprintf("[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la_dimensions.txt'"));
 
 end
 

@@ -12,11 +12,13 @@ function [anthro, design_inputs, material_data] = system_design(app)
     log_to_output(app, sprintf("[material_db]     Accessed hdpe data."))
 
     log_to_output(app, sprintf("[system_design] Initiating WRC, LA, TRC analysis."))
-    wrc_safety_factors = wrc_design(anthro, design_inputs, material_data);
-    %la_safety_factors = la_design(anthro, design_inputs, material_data);
-    %trc_safety_factors = trc_design(anthro, design_inputs, material_data)
+    wrc_safety_factors = wrc_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from WRC [1/3]."))
+    la_safety_factors = la_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from LA [2/3]."))
+    trc_safety_factors = trc_design(app, anthro, design_inputs, material_data);
+    log_to_output(app, sprintf("[system_design] Returned successfully from TRC [3/3]."))
     
-
     log_to_output(app, sprintf("[system_design] System design complete."))   
 end
 

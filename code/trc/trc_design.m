@@ -1,4 +1,4 @@
-function [safety_factors] = trc_design(anthro, design_inputs, material_data)
+function [safety_factors] = trc_design(app, anthro, design_inputs, material_data)
 hdpe = material_data("hdpe");
 
 % ANTHROPOMETRY 
@@ -27,6 +27,10 @@ else
     fin_platform_height = 0.050; %to be parametrized
     fin_platform_width = 0.033265;
 end 
+
+log_to_output(app, sprintf("[trc_design] Initializing TRC parametrization: "));
+log_to_output(app, sprintf("[trc_design]     shell_outer_radius:    %f8 m", shell_outer_radius));
+log_to_output(app, sprintf("[trc_design]     fin_platform_height:   %f8 m", fin_platform_height));
 
 shellLength = user.height/13.07; %m
 fin_hole_radius = 0.01; %m 
@@ -73,9 +77,9 @@ while count<50
     
     SF_cyclical = fatigue([stress_min, stress_max], hdpe, true);
     
-    current_SF = [SF_pressure, SF_bending, SF_cyclical]
+    current_SF = [SF_pressure, SF_bending, SF_cyclical];
 
-    current_dimensions = [shell_outer_radius, fin_thickness]
+    current_dimensions = [shell_outer_radius, fin_thickness];
 
 
    if SF_pressure <2.5
@@ -142,4 +146,15 @@ fprintf(fileID,formatSpec,user.height,fin_thickness, fin_platform_width, fin_pla
 fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\velcroStrap_dimensions.txt','w');
 formatSpec = '"userHeight" = %3.1f \n ';
 fprintf(fileID,formatSpec,user.height);
+
+log_to_output(app, sprintf("[trc_design] TRC parametrization complete."));
+log_to_output(app, sprintf("[trc_design] Final values: "));
+log_to_output(app, sprintf("[trc_design]     shell_outer_radius:    %f8 m", shell_outer_radius));
+log_to_output(app, sprintf("[trc_design]     fin_platform_height:   %f8 m", fin_platform_height));
+log_to_output(app, sprintf("[trc_design] Final safety factors: "));
+log_to_output(app, sprintf("[trc_design]     skin_pressure_SF:  %f2", safety_factors.skin_pressure_SF));
+log_to_output(app, sprintf("[trc_design]     bending_SF: %f2", safety_factors.bending_SF));
+log_to_output(app, sprintf("[trc_design]     fin_cylical_SF: %f2", safety_factors.fin_cylical_SF));
+log_to_output(app, sprintf("[trc_design] TRC design completed successfully in %d iterations.", count));
+log_to_output(app, sprintf("[trc_design] Equations exported to: 'C:/MCG4322b/Group4/code/trc/trc_output.txt'"));
 end 
