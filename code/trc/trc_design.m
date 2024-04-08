@@ -24,8 +24,8 @@ velcro_inner_radius = user.height/20;
 
 fin_hole_radius = 0.01; %m 
 fin_thickness = 5*user.height/1500;
-fin_platform_width = 2*user.height/20*sin(18/180*pi)-0.01
-fin_platform_height = (70.58-60)/(2000-1700)*user.height - 0.01
+fin_platform_width = 2*user.height/20*sin(18/180*pi)-0.01;
+fin_platform_height = (70.58-60)/(2000-1700)*user.height - 0.01;
 platform_height_width = fin_platform_height/fin_platform_width;
 
 
@@ -33,14 +33,16 @@ a = 0.04; %distance from top of sidebar to velcro slot (will not change)
 
 L =partialSidebarLength + shellLength;
 
+    % For parametrization %
+    best_configuration = struct();
+    cost = intmax;
+    cost_threshold = 0.05;
+    num_iterations = 0;
+    MAX_ITER = 1000;
+    GOAL_SF = 2.5;
 
 
-%PARAMETRIZATION INITIALIZATIONS
-count = 0;
-cost_lowest = [fin_thickness, fin_platform_height, fin_platform_width, shell_outer_radius, 900000];
-SF_best = [-10,-10,-10,-10,-10,-10, -10,-10];
-
-while count<100
+while (cost > cost_threshold && num_iterations <= MAX_ITER)
   
     % deflection/pressure on wearer SF -> divide/multiply sidebar length 
     
@@ -70,79 +72,65 @@ while count<100
     stress_min = K_f*min_force.spring_force*sin(min_force.cable_thigh_right_angle)/(fin_base_area); %N/m^2
     
     SF_cyclical = fatigue([stress_min, stress_max], hdpe, true);
-    
-    current_SF = [SF_pressure, SF_bending, SF_cyclical];
 
-    current_specs = struct(...
+      
+    %% SAFETY FACTORS, DIMENSIONS:
+    
+    % safety factors to log %
+    config.safety_factors = struct(...
         'SF_skin_pressure', SF_pressure, ...
         'SF_bending', SF_bending, ...
-        'SF_fin_cyclical', SF_cyclical, ...
+        'SF_fin_cyclical', SF_cyclical);
+    weights = [1,100,1];
+    config.cost = compute_cost(config.safety_factors, weights);
+
+    % dimensions to log %
+        config.dimensions = struct(...
         'shell_outer_radius', shell_outer_radius, ...
         'fin_platform_width', fin_platform_width, ...
         'fin_platform_height', fin_platform_height, ...
-        'fin_thickness', fin_thickness)
+        'fin_thickness', fin_thickness);
+   %% LOOP
+        % Check if we found the best configuration so far %
+        if (config.cost < cost)
+            best_configuration = config;
+            cost = config.cost;
+        end
 
+        % Increment/Decrement parameter based on SF %
+        kick = (1/10000)*sqrt(cost);
 
-   if SF_pressure <2.5
-       pressure_cost = 200*(2.5-SF_pressure);
-   else
-       pressure_cost = (SF_pressure-2.5);
-   end
-   if SF_bending <2.5
-       bending_cost = 200*(2.5-SF_bending);
-   else
-       bending_cost = (SF_bending-2.5);
-   end
-
-   if SF_pressure < 2.5 || SF_bending <2.5
-            shell_outer_radius = shell_outer_radius*0.98;
+   if SF_pressure < GOAL_SF || SF_bending < GOAL_SF
+            shell_outer_radius = shell_outer_radius - shell_outer_radius*kick;
             if shell_outer_radius < shell_inner_radius + 0.003
                 shell_outer_radius = shell_inner_radius + 0.003;
             end
    else
-            shell_outer_radius = shell_outer_radius*1.02;
+            shell_outer_radius = shell_outer_radius + shell_outer_radius*kick;
    end
 
-    if SF_cyclical <2.5
-       cyclical_cost = 1000*(2.5-SF_cyclical);
-       fin_thickness = fin_thickness*1.02;
+    if SF_cyclical < GOAL_SF    
+       fin_thickness = fin_thickness + fin_thickness*kick
+       fin_platform_height =fin_platform_height + fin_platform_height*kick
     else
-       cyclical_cost = (SF_cyclical-2.5);
-       fin_thickness = fin_thickness*0.98;
+       fin_thickness = fin_thickness - fin_thickness*kick;
        if fin_thickness < 0.003
            fin_thickness = 0.003; % limited for manufacturing purposes
        end 
-       fin_platform_height =fin_platform_height*0.98;
+       fin_platform_height = fin_platform_height - fin_platform_height*kick;
        if fin_platform_height < 0.0375
            fin_platform_height = 0.0375;
        end 
-       fin_platform_width = fin_platform_height/platform_height_width;
     end
+    fin_platform_width = fin_platform_height/platform_height_width;
+    num_iterations = num_iterations + 1;
 
-   cost = pressure_cost + bending_cost + cyclical_cost;
-       
-    if cost<cost_lowest(1,5)
-        cost_lowest = [fin_thickness, fin_platform_height, fin_platform_width, shell_outer_radius,cost]; %store dimensions which give lowest cost
-        SF_best = current_SF;
-    end 
-
-    count = count + 1;
 end
 
-fin_thickness = cost_lowest(:,1);
-fin_platform_height = cost_lowest(:,2);
-fin_platform_width = cost_lowest(:,3);
-shell_outer_radius = cost_lowest(:,4);
-
-
-safety_factors = struct(...
-        'skin_pressure_SF', SF_best(:,1), ...
-        'bending_SF', SF_best(:,2), ...
-        'fin_cylical_SF', SF_best(:,3), ...
-        'fin_thickness', fin_thickness, ...
-        'fin_platform_width', fin_platform_width, ...
-        'fin_platform_height', fin_platform_height, ...
-        'shell_outer_radius', shell_outer_radius);
+ best_configuration.dimensions
+ log_dimensions("C:\MCG4322B\MCG4322B\code\trc\trc_dimensions.txt", best_configuration.dimensions)
+ safety_factors = best_configuration.safety_factors
+ num_iterations
 
 % WRITE DIMENSIONS IN TEXT FILE
 fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\thighcuff_dimensions.txt','w');

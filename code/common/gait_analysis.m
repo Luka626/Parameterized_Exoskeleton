@@ -9,6 +9,7 @@ function [external_loads] = gait_analysis(anthro)
     user.stride_length = -2.234 + 0.106*user.age - 0.0008*user.age^2; % m 
     
     % EXOSKELETON CONSTANTS
+
     LA_pulley_center = 0.08; %m
     waist_cuff_thickness = 0.010; %m, should it be constant or change with weight?
     length_pin = 0.030; % m

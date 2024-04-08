@@ -1,0 +1,4 @@
+"shell_outer_radius"=0.00386150
+"fin_platform_width"=-0.02490649
+"fin_platform_height"=-0.02468763
+"fin_thickness"=0.00016714
