@@ -52,10 +52,10 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
     backplate.width = user.waist_circumference/10;        % Func. assumes nominal 75% back coverage %
     belt.width = user.waist_radius*2*pi / 10;               % Span of user's waist circumference %
     adjustment.length = user.waist_radius*2/5;              % CONST, to allow for sizing options
-    frontplate.thickness = 0.02;                            % CONST, agreed upon with LA %
+    frontplate.thickness = 0.016;                            % CONST, agreed upon with LA %
     belt.release_radius = 0.09;                             % CONST, manufacturer spec.
     belt.roller_radius = 0.06;                              % CONST, manufacturer spec.
-    frontplate.load = -1*2*spring.y;                        % From frontplate
+    frontplate.load = -1*3*spring.y;                        % From frontplate
     padding.pressure = design_inputs.pain_pressure;         % From requirements
 
     %% PARAMETRIZATION LOOP
@@ -63,8 +63,8 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
     while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
         % Derived Dimensions %
-        frontplate.length = user.waist_radius*2*pi / 4 - belt.width/4; % Leave room for belt width %
-        frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length-frontplate.height)); % derived from simplified geometrty %
+        frontplate.length = user.waist_radius*2*pi / 4 - belt.width; % Leave room for belt width %
+        frontplate.thickness_total = (frontplate.thickness + 0.03*1/2*(frontplate.length)); % derived from simplified geometrty %
         adjustment.height = backplate.height/10;
         hinge.length = frontplate.height;
         belt.tension = design_inputs.strength*belt.release_radius/belt.roller_radius;
@@ -133,7 +133,7 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
         end
 
         % Increment/Decrement parameter based on SF %
-        kick = (1/20)*sqrt(config.cost);
+        kick = (1/100)*sqrt(config.cost);
         if (backplate.SF < GOAL_SF)
             backplate.thickness = backplate.thickness + backplate.thickness*kick;
         else
@@ -144,6 +144,9 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
             frontplate.height = frontplate.height + frontplate.height*kick;
         else
             frontplate.height = frontplate.height - frontplate.height*kick;
+        end
+        if (frontplate.height < (12.00*2)/1000)
+            frontplate.height = (12.00*2)/1000;
         end
 
         if (adjustment.SF < GOAL_SF)
@@ -166,26 +169,26 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
 
         
         %iterations  = [iterations;  num_iterations];
-        %costs       = [costs;   config.cost];
+        %scosts       = [costs;   config.cost];
     end
 
     log_dimensions("code/wrc/wrc_output.txt", best_configuration.dimensions);
     safety_factors = best_configuration.safety_factors;
-    %plot(iterations, costs)
+    %plot(iterations, costs);
 
     log_to_output(app, sprintf("[wrc_design] WRC parameterization complete."));
     log_to_output(app, sprintf("[wrc_design] Final values: "));
-    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %f8 m", backplate.thickness));
-    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %f8 m", frontplate.height));
-    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %f8 m", adjustment.thickness));
-    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %f8 m", hinge.diameter));
-    log_to_output(app, sprintf("[wrc_design]     padding_area:          %f8 m", padding.area));
+    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %.2f mm", best_configuration.dimensions.backplate_thickness));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %.2f mm", best_configuration.dimensions.frontplate_height));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %.2f mm", best_configuration.dimensions.adjustment_thickness));
+    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %.2f mm", best_configuration.dimensions.hinge_diameter));
+    log_to_output(app, sprintf("[wrc_design]     padding_area:          %.2f mm2", best_configuration.dimensions.Padding_Area1));
     log_to_output(app, sprintf("[wrc_design] Final safety factors: "));
-    log_to_output(app, sprintf("[wrc_design]     backplate_SF:  %f2", best_configuration.safety_factors.backplate_SF));
-    log_to_output(app, sprintf("[wrc_design]     frontplate_SF: %f2", best_configuration.safety_factors.frontplate_SF));
-    log_to_output(app, sprintf("[wrc_design]     adjustment_SF: %f2", best_configuration.safety_factors.adjustment_SF));
-    log_to_output(app, sprintf("[wrc_design]     hinge_SF:      %f2", best_configuration.safety_factors.hinge_SF));
-    log_to_output(app, sprintf("[wrc_design]     padding_SF:    %f2", best_configuration.safety_factors.padding_SF));
+    log_to_output(app, sprintf("[wrc_design]     backplate_SF:  %.3f", best_configuration.safety_factors.backplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_SF: %.3f", best_configuration.safety_factors.frontplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_SF: %.3f", best_configuration.safety_factors.adjustment_SF));
+    log_to_output(app, sprintf("[wrc_design]     hinge_SF:      %.3f", best_configuration.safety_factors.hinge_SF));
+    log_to_output(app, sprintf("[wrc_design]     padding_SF:    %.3f", best_configuration.safety_factors.padding_SF));
     log_to_output(app, sprintf("[wrc_design] WRC design completed successfully in %d iterations.", num_iterations));
     log_to_output(app, sprintf("[wrc_design] Equations exported to: 'C:/MCG4322b/Group4/code/wrc/wrc_output.txt'"));
 end

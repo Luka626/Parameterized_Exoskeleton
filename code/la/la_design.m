@@ -21,11 +21,13 @@ weight_pulley = 0.11189; %N
     hip_cuff_distance = 7/8*user.L_thigh; %m
     waist_hip_length = 0.1*user.height;
     LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
+    LA_length_lb = 0.05;
+    if LA_length < LA_length_lb
+        LA_length = LA_length_lb;
+    end
 
 
-log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
-log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
-log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
+
 
 %Pulley reaction forces
 spring_min_force = design_inputs.external_loads.min_force.spring_force;
@@ -39,9 +41,9 @@ spring_max_force_angle = design_inputs.external_loads.max_force.thigh_LA_right_a
 %For parametrization 
     best_configuration = struct();
     cost = intmax;
-    cost_threshold = 0.05;
+    cost_threshold = 0.01;
     num_iterations = 0;
-    MAX_ITER = 5000;
+    MAX_ITER = 1000;
     GOAL_SF = 2.5;
 
 
@@ -52,6 +54,9 @@ spring_max_force_angle = design_inputs.external_loads.max_force.thigh_LA_right_a
     diameter_bolt = 0.003; %M3 bolt
     radius_pin = b/2; 
 
+log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
+log_to_output(app, sprintf("[la_design]     la_height:  %f8 m", h));
+log_to_output(app, sprintf("[la_design]     la_base:    %f8 m", b));
 
 while (cost > cost_threshold && num_iterations <= MAX_ITER)
   
@@ -91,11 +96,11 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     bending_min_moment_LA = force_min_bending*b_bending;
     stress_min_bending_LA = 2.1*6*bending_min_moment_LA/((h-diameter_bolt)*b^2); % max stress at bolt hole (rect section) from bending
     
-    SF_static_bending_pin = al6061.yield/stress_max_bending_pin;
-    SF_static_bending_LA = al6061.yield/stress_max_bending_LA;
+    SF_static_bending_pin = al6061.yield/abs(stress_max_bending_pin);
+    SF_static_bending_LA = al6061.yield/abs(stress_max_bending_LA);
     
-    SF_cyclical_bending_pin = fatigue([stress_min_bending_pin, stress_max_bending_pin], al6061, false);
-    SF_cyclical_bending_LA = fatigue([stress_min_bending_LA, stress_max_bending_LA], al6061, false);
+    SF_cyclical_bending_pin = abs(fatigue([stress_min_bending_pin, stress_max_bending_pin], al6061, false));
+    SF_cyclical_bending_LA = abs(fatigue([stress_min_bending_LA, stress_max_bending_LA], al6061, false));
     
     % axial stress
     force_max_axial = force_max_pulley_x;
@@ -107,7 +112,7 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     stress_min_axial_pin = force_min_axial/(area_cross_section_LA)*2.5; %min loading at max stress location
     stress_min_axial_LA = force_min_axial/((h-diameter_bolt)*b)*3.25; %min loading at max stress location
     
-    SF_static_axial_pin = al6061.yield/stress_max_axial_pin; 
+    SF_static_axial_pin = al6061.yield/abs(stress_max_axial_pin); 
     SF_static_axial_LA = al6061.yield/stress_max_axial_LA;
     
     SF_cyclical_axial_pin = fatigue([stress_min_axial_pin, stress_max_axial_pin], al6061, true); 
@@ -118,21 +123,21 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
         % safety factors to log %
         config.safety_factors = struct(...
-        'pin_static_bending_SF', SF_static_bending_pin, ...
+        'LA_cyclical_bending_SF', SF_cyclical_bending_LA, ...
+        'LA_static_axial_SF', SF_static_axial_LA,...
         'LA_static_bending_SF', SF_static_bending_LA, ...
         'pin_cyclical_bending_SF', SF_cyclical_bending_pin, ...
-        'LA_cyclical_bending_SF', SF_cyclical_bending_LA, ...
         'pin_static_axial_SF', SF_static_axial_pin, ...
-        'LA_static_axial_SF', SF_static_axial_LA)
-        weights = [0.25,1,1,300,1,1];
+        'pin_static_bending_SF', SF_static_bending_pin);
+        weights = [0.0002,0.00025,0.0005,5,0.000025,0.0005];
         config.cost = compute_cost(config.safety_factors, weights );
 
         % dimensions to log %
         config.dimensions = struct(...
-            'LA_length', LA_length,...
-            'LA_height', h, ...
-            'LA_width', b, ...
-            'radius_pin', radius_pin);
+            'LA_length', LA_length*1000,...
+            'LA_height', h*1000, ...
+            'LA_width', b*1000, ...
+            'radius_pin', radius_pin*1000);
 
         %% LOOP
         % Check if we found the best configuration so far %
@@ -141,7 +146,7 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
             cost = config.cost;
         end
         % Increment/Decrement parameter based on SF %
-        kick = (1/1000)*sqrt(cost);
+        kick = (1/1000)*sqrt(config.cost);
         if (SF_static_bending_pin < GOAL_SF || SF_static_bending_LA < GOAL_SF || SF_cyclical_bending_pin < GOAL_SF || SF_cyclical_bending_LA < GOAL_SF ||...
                 SF_static_axial_pin < GOAL_SF || SF_static_axial_LA < GOAL_SF || SF_cyclical_axial_pin < GOAL_SF || SF_cyclical_axial_LA < GOAL_SF)
            b= b+b*kick;
@@ -150,10 +155,27 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
            b= b - b*kick;
            h = b/ratio_b_h;
         end
-        
         num_iterations = num_iterations + 1;
 end
-    best_configuration.dimensions
-    log_dimensions("C:\MCG4322B\MCG4322B\code\la\LA_dimensions.txt", best_configuration.dimensions)
-    safety_factors = best_configuration.safety_factors
-    num_iterations
+    best_configuration.esr_dimensions = struct( ...
+        'LA_length', best_configuration.dimensions.LA_length, ...
+        'waist_diameter', user.waist_radius*2*1000);
+    log_to_output(app, sprintf("[la_design] LA parametrization complete."));
+    log_to_output(app, sprintf("[la_design] Final values: "));
+    log_to_output(app, sprintf("[la_design]     LA_height:  %.2f mm", best_configuration.dimensions.LA_height));
+    log_to_output(app, sprintf("[la_design]     LA_width:   %.2f mm", best_configuration.dimensions.LA_width));
+    log_to_output(app, sprintf("[la_design]     LA_length:  %.2f mm", best_configuration.dimensions.LA_length));
+    log_to_output(app, sprintf("[la_design]     radius_pin: %.2f mm", best_configuration.dimensions.radius_pin));
+    log_to_output(app, sprintf("[la_design] Final safety factors: "));
+    log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF:     %.3f", best_configuration.safety_factors.LA_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_axial_SF:         %.3f", best_configuration.safety_factors.LA_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_bending_SF:       %.3f", best_configuration.safety_factors.LA_static_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_cyclical_bending_SF:    %.3f", best_configuration.safety_factors.pin_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_axial_SF:        %.3f", best_configuration.safety_factors.pin_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_bending_SF:      %.3f", best_configuration.safety_factors.pin_static_bending_SF));
+    log_to_output(app, sprintf("[la_design] LA design completed successfully in %d iterations.", num_iterations));
+    log_to_output(app, sprintf("[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la/LA_dimensions.txt'"));
+    log_dimensions("code/la/LA_dimensions.txt", best_configuration.dimensions);
+    log_dimensions("code/esr/esr_dimensions.txt", best_configuration.esr_dimensions);
+    safety_factors = best_configuration.safety_factors;
+end

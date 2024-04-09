@@ -8,7 +8,7 @@ function [hinge_SF, frontplate_SF] = compute_frontplate_SF (components, user, al
     hinge.reaction_x = -1*belt.tension;
     hinge.reaction_y = 0;
     hinge.reaction_z = frontplate.mass*9.81+2*frontplate.load;
-    hinge.m_x = -(frontplate.mass*9.81*user.waist_radius*2/4*(2/3) + frontplate.load*user.waist_radius*2/4);
+    hinge.m_x = -(frontplate.mass*9.81*user.waist_radius*2/4*(2/3) + frontplate.load*user.waist_radius*2/3);
     hinge.m_y = 0;
     hinge.m_z = -belt.tension*user.waist_radius*2/2;
 
