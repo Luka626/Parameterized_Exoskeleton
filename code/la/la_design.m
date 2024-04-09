@@ -154,7 +154,7 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
 end
     best_configuration.esr_dimensions = struct( ...
         'LA_length', best_configuration.dimensions.LA_length, ...
-        'waist_diameter', user.waist_radius*2);
+        'waist_diameter', user.waist_radius*2*1000);
     log_to_output(app, sprintf("[la_design] LA parametrization complete."));
     log_to_output(app, sprintf("[la_design] Final values: "));
     log_to_output(app, sprintf("[la_design]     LA_height:  %f8 m", best_configuration.dimensions.LA_height));
