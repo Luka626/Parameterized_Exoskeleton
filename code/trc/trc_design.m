@@ -125,26 +125,23 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     num_iterations = num_iterations + 1;
 
 end
-
- best_configuration.dimensions
- log_dimensions("C:\MCG4322B\MCG4322B\code\trc\trc_dimensions.txt", best_configuration.dimensions)
- safety_factors = best_configuration.safety_factors
- num_iterations
+ log_dimensions("code/trc/trc_dimensions.txt", best_configuration.dimensions);
+ safety_factors = best_configuration.safety_factors;
 
 % WRITE DIMENSIONS IN TEXT FILE
-fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\thighcuff_dimensions.txt','w');
+fileID = fopen('code/trc/thighcuff_dimensions.txt','w');
 formatSpec = ['"userHeight" = %3.1f \n "shellLength" = %3.1f \n ' ...
     '"partialSidebarLength" = %3.1f \n "shell_outer_radius" = %3.1f \n' ...
     '"shell_inner_radius" = %3.1f \n' '"fin_platform_extrusion" = %3.1f \n'];
 fprintf(fileID,formatSpec,user.height*1000,shellLength*1000, partialSidebarLength*1000, ...
     shell_outer_radius*1000, shell_inner_radius*1000, fin_platform_extrusion*1000);
 
-fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\thighFin_dimensions.txt','w');
+fileID = fopen('code/trc/thighFin_dimensions.txt','w');
 formatSpec = ['"userHeight" = %3.1f \n "fin_hole_radius" = %3.1f \n "fin_thickness" = %3.1f \n ' ...
     '"fin_platform_width" = %3.1f \n "fin_platform_height" = %3.1f \n '];
 fprintf(fileID,formatSpec,user.height*1000,fin_hole_radius*1000, fin_thickness*1000,  fin_platform_width*1000, fin_platform_height*1000);
 
-fileID = fopen('C:\MCG4322B\MCG4322B\code\trc\velcroStrap_dimensions.txt','w');
+fileID = fopen('code/trc/velcroStrap_dimensions.txt','w');
 formatSpec = '"userHeight" = %3.1f \n ';
 fprintf(fileID,formatSpec,user.height);
 
@@ -153,9 +150,9 @@ log_to_output(app, sprintf("[trc_design] Final values: "));
 log_to_output(app, sprintf("[trc_design]     shell_outer_radius:    %f8 m", shell_outer_radius));
 log_to_output(app, sprintf("[trc_design]     fin_platform_height:   %f8 m", fin_platform_height));
 log_to_output(app, sprintf("[trc_design] Final safety factors: "));
-log_to_output(app, sprintf("[trc_design]     skin_pressure_SF:  %f2", safety_factors.skin_pressure_SF));
-log_to_output(app, sprintf("[trc_design]     bending_SF: %f2", safety_factors.bending_SF));
-log_to_output(app, sprintf("[trc_design]     fin_cylical_SF: %f2", safety_factors.fin_cylical_SF));
-log_to_output(app, sprintf("[trc_design] TRC design completed successfully in %d iterations.", count));
+log_to_output(app, sprintf("[trc_design]     SF_skin_pressure:  %f2", safety_factors.SF_skin_pressure));
+log_to_output(app, sprintf("[trc_design]     SF_bending: %f2", safety_factors.SF_bending));
+log_to_output(app, sprintf("[trc_design]     SF_fin_cyclical: %f2", safety_factors.SF_fin_cyclical));
+log_to_output(app, sprintf("[trc_design] TRC design completed successfully in %d iterations.", num_iterations));
 log_to_output(app, sprintf("[trc_design] Equations exported to: 'C:/MCG4322b/Group4/code/trc/trc_output.txt'"));
 end 

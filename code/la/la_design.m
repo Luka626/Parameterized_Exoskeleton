@@ -23,9 +23,6 @@ weight_pulley = 0.11189; %N
     LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
 
 
-log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
-log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
-log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
 
 %Pulley reaction forces
 spring_min_force = design_inputs.external_loads.min_force.spring_force;
@@ -52,6 +49,9 @@ spring_max_force_angle = design_inputs.external_loads.max_force.thigh_LA_right_a
     diameter_bolt = 0.003; %M3 bolt
     radius_pin = b/2; 
 
+log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
+log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
+log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
 
 while (cost > cost_threshold && num_iterations <= MAX_ITER)
   
@@ -118,13 +118,13 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
         % safety factors to log %
         config.safety_factors = struct(...
-        'pin_static_bending_SF', SF_static_bending_pin, ...
+        'LA_cyclical_bending_SF', SF_cyclical_bending_LA, ...
+        'LA_static_axial_SF', SF_static_axial_LA,...
         'LA_static_bending_SF', SF_static_bending_LA, ...
         'pin_cyclical_bending_SF', SF_cyclical_bending_pin, ...
-        'LA_cyclical_bending_SF', SF_cyclical_bending_LA, ...
         'pin_static_axial_SF', SF_static_axial_pin, ...
-        'LA_static_axial_SF', SF_static_axial_LA)
-        weights = [0.25,1,1,300,1,1];
+        'pin_static_bending_SF', SF_static_bending_pin);
+        weights = [0.002,0.00025,0.0005,10,0.00025,0.0005];
         config.cost = compute_cost(config.safety_factors, weights );
 
         % dimensions to log %
@@ -150,10 +150,8 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
            b= b - b*kick;
            h = b/ratio_b_h;
         end
-        
         num_iterations = num_iterations + 1;
 end
-    best_configuration.dimensions
-    log_dimensions("C:\MCG4322B\MCG4322B\code\la\LA_dimensions.txt", best_configuration.dimensions)
-    safety_factors = best_configuration.safety_factors
-    num_iterations
+
+    log_dimensions("code/la/LA_dimensions.txt", best_configuration.dimensions);
+    safety_factors = best_configuration.safety_factors;
