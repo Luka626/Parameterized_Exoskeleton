@@ -119,14 +119,13 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         % safety factors to log %
         config.safety_factors = struct(...
         'LA_cyclical_bending_SF', SF_cyclical_bending_LA, ...
-        'LA_static_bending_SF', SF_static_bending_LA, ...
-        
         'LA_static_axial_SF', SF_static_axial_LA,...
+        'LA_static_bending_SF', SF_static_bending_LA, ...
         'pin_cyclical_bending_SF', SF_cyclical_bending_pin, ...
+        'pin_static_axial_SF', SF_static_axial_pin, ...
         'pin_static_bending_SF', SF_static_bending_pin);
-        weights = [0.25,1,1,0.5,1,1];
+        weights = [0.002,0.00025,0.0005,50,0.00025,0.0005];
         config.cost = compute_cost(config.safety_factors, weights );
-        config.cost
 
         % dimensions to log %
         config.dimensions = struct(...
@@ -151,10 +150,17 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
            b= b - b*kick;
            h = b/ratio_b_h;
         end
-        config.safety_factors
         num_iterations = num_iterations + 1;
 end
-
+    log_to_output(app, sprintf("[la_design] LA parametrization complete."));
+    log_to_output(app, sprintf("[la_design] Final values: "));
+    log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", best_configuration.safety_fa));
+    log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
+    log_to_output(app, sprintf("[la_design] Final safety factors: "));
+    log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF:   %f8 m", h));
+    log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
+    log_to_output(app, sprintf("[la_design] LA design completed successfully in %d iterations.", num_iterations));
+    log_to_output(app, sprintf("[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la/LA_dimensions.txt'"));
     log_dimensions("code/la/LA_dimensions.txt", best_configuration.dimensions);
     safety_factors = best_configuration.safety_factors;
-    num_iterations
+end

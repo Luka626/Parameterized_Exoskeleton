@@ -50,8 +50,8 @@ spring_max_force_angle = design_inputs.external_loads.max_force.thigh_LA_right_a
     radius_pin = b/2; 
 
 log_to_output(app, sprintf("[la_design] Initializing LA parametrization: "));
-log_to_output(app, sprintf("[la_design]     la_height:   %f8 m", h));
-log_to_output(app, sprintf("[la_design]     la_base:     %f8 m", b));
+log_to_output(app, sprintf("[la_design]     la_height:  %f8 m", h));
+log_to_output(app, sprintf("[la_design]     la_base:    %f8 m", b));
 
 while (cost > cost_threshold && num_iterations <= MAX_ITER)
   
@@ -124,15 +124,15 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         'pin_cyclical_bending_SF', SF_cyclical_bending_pin, ...
         'pin_static_axial_SF', SF_static_axial_pin, ...
         'pin_static_bending_SF', SF_static_bending_pin);
-        weights = [0.002,0.00025,0.0005,10,0.00025,0.0005];
+        weights = [0.002,0.00025,0.0005,50,0.00025,0.0005];
         config.cost = compute_cost(config.safety_factors, weights );
 
         % dimensions to log %
         config.dimensions = struct(...
-            'LA_length', LA_length,...
-            'LA_height', h, ...
-            'LA_width', b, ...
-            'radius_pin', radius_pin);
+            'LA_length', LA_length*1000,...
+            'LA_height', h*1000, ...
+            'LA_width', b*1000, ...
+            'radius_pin', radius_pin*1000);
 
         %% LOOP
         % Check if we found the best configuration so far %
@@ -152,6 +152,25 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         end
         num_iterations = num_iterations + 1;
 end
-
+    best_configuration.esr_dimensions = struct( ...
+        'LA_length', best_configuration.dimensions.LA_length, ...
+        'waist_diameter', user.waist_radius*2);
+    log_to_output(app, sprintf("[la_design] LA parametrization complete."));
+    log_to_output(app, sprintf("[la_design] Final values: "));
+    log_to_output(app, sprintf("[la_design]     LA_height:  %f8 m", best_configuration.dimensions.LA_height));
+    log_to_output(app, sprintf("[la_design]     LA_width:   %f8 m", best_configuration.dimensions.LA_width));
+    log_to_output(app, sprintf("[la_design]     LA_length:  %f8 m", best_configuration.dimensions.LA_length));
+    log_to_output(app, sprintf("[la_design]     radius_pin: %f8 m", best_configuration.dimensions.radius_pin));
+    log_to_output(app, sprintf("[la_design] Final safety factors: "));
+    log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF: %f8 m", best_configuration.safety_factors.LA_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_axial_SF:     %f8 m", best_configuration.safety_factors.LA_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_bending_SF:   %f8 m", best_configuration.safety_factors.LA_static_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_cyclical_bending_SF:%f8 m", best_configuration.safety_factors.pin_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_axial_SF:    %f8 m", best_configuration.safety_factors.pin_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_bending_SF:  %f8 m", best_configuration.safety_factors.pin_static_bending_SF));
+    log_to_output(app, sprintf("[la_design] LA design completed successfully in %d iterations.", num_iterations));
+    log_to_output(app, sprintf("[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la/LA_dimensions.txt'"));
     log_dimensions("code/la/LA_dimensions.txt", best_configuration.dimensions);
+    log_dimensions("code/esr/esr_dimensions.txt", best_configuration.esr_dimensions);
     safety_factors = best_configuration.safety_factors;
+end

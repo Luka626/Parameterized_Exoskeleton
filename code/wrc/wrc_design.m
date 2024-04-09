@@ -133,7 +133,7 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
         end
 
         % Increment/Decrement parameter based on SF %
-        kick = (1/20)*sqrt(config.cost);
+        kick = (1/100)*sqrt(config.cost);
         if (backplate.SF < GOAL_SF)
             backplate.thickness = backplate.thickness + backplate.thickness*kick;
         else
@@ -166,12 +166,12 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
 
         
         %iterations  = [iterations;  num_iterations];
-        %costs       = [costs;   config.cost];
+        %scosts       = [costs;   config.cost];
     end
 
     log_dimensions("code/wrc/wrc_output.txt", best_configuration.dimensions);
     safety_factors = best_configuration.safety_factors;
-    %plot(iterations, costs)
+    %plot(iterations, costs);
 
     log_to_output(app, sprintf("[wrc_design] WRC parameterization complete."));
     log_to_output(app, sprintf("[wrc_design] Final values: "));

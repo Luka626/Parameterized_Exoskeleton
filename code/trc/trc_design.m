@@ -85,10 +85,12 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
 
     % dimensions to log %
         config.dimensions = struct(...
-        'shell_outer_radius', shell_outer_radius, ...
-        'fin_platform_width', fin_platform_width, ...
-        'fin_platform_height', fin_platform_height, ...
-        'fin_thickness', fin_thickness);
+        'shell_outer_radius', shell_outer_radius*1000, ...
+        'fin_platform_width', fin_platform_width*1000, ...
+        'fin_platform_height', fin_platform_height*1000, ...
+        'fin_thickness', fin_thickness*1000, ...
+        'partial_sidebar_length', partialSidebarLength*1000, ...
+        'shell_length', shellLength*1000);
    %% LOOP
         % Check if we found the best configuration so far %
         if (config.cost < cost)
@@ -97,9 +99,9 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         end
 
         % Increment/Decrement parameter based on SF %
-        kick = (1/10000)*sqrt(cost);
+        kick = (1/100)*sqrt(cost);
 
-   if SF_pressure < GOAL_SF || SF_bending < GOAL_SF
+   if SF_pressure > GOAL_SF || SF_bending > GOAL_SF
             shell_outer_radius = shell_outer_radius - shell_outer_radius*kick;
             if shell_outer_radius < shell_inner_radius + 0.003
                 shell_outer_radius = shell_inner_radius + 0.003;
@@ -125,25 +127,14 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     num_iterations = num_iterations + 1;
 
 end
- log_dimensions("code/trc/trc_dimensions.txt", best_configuration.dimensions);
- safety_factors = best_configuration.safety_factors;
 
-% WRITE DIMENSIONS IN TEXT FILE
-fileID = fopen('code/trc/thighcuff_dimensions.txt','w');
-formatSpec = ['"userHeight" = %3.1f \n "shellLength" = %3.1f \n ' ...
-    '"partialSidebarLength" = %3.1f \n "shell_outer_radius" = %3.1f \n' ...
-    '"shell_inner_radius" = %3.1f \n' '"fin_platform_extrusion" = %3.1f \n'];
-fprintf(fileID,formatSpec,user.height*1000,shellLength*1000, partialSidebarLength*1000, ...
-    shell_outer_radius*1000, shell_inner_radius*1000, fin_platform_extrusion*1000);
+best_configuration.esr_dimensions = struct(...
+    "partial_sidebar_length", best_configuration.dimensions.partial_sidebar_length,...
+    "shell_length", best_configuration.dimensions.shell_length);
 
-fileID = fopen('code/trc/thighFin_dimensions.txt','w');
-formatSpec = ['"userHeight" = %3.1f \n "fin_hole_radius" = %3.1f \n "fin_thickness" = %3.1f \n ' ...
-    '"fin_platform_width" = %3.1f \n "fin_platform_height" = %3.1f \n '];
-fprintf(fileID,formatSpec,user.height*1000,fin_hole_radius*1000, fin_thickness*1000,  fin_platform_width*1000, fin_platform_height*1000);
-
-fileID = fopen('code/trc/velcroStrap_dimensions.txt','w');
-formatSpec = '"userHeight" = %3.1f \n ';
-fprintf(fileID,formatSpec,user.height);
+log_dimensions("code/trc/trc_dimensions.txt", best_configuration.dimensions);
+log_dimensions("code/esr/esr_dimensions.txt", best_configuration.esr_dimensions, true);
+safety_factors = best_configuration.safety_factors;
 
 log_to_output(app, sprintf("[trc_design] TRC parametrization complete."));
 log_to_output(app, sprintf("[trc_design] Final values: "));

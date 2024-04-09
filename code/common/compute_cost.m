@@ -14,7 +14,7 @@ end
 
         % penalize any safety factors below requirment %
         if (sf - GOAL_SF) < 0
-            value = value * (50^2);
+            value = value * (20^2);
         end
 
         total_cost = total_cost + value;
