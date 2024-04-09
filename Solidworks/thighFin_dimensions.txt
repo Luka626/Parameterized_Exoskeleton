@@ -1,6 +1,0 @@
-﻿"userHeight" = 1895.3 
- "fin_hole_radius" = 10.0 
- "fin_thickness" = 3.0 
- "fin_platform_width" = 32.0 
- "fin_platform_height" = 37.5 
- 
