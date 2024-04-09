@@ -1,4 +1,4 @@
-"LA_length"=50.00000000
-"LA_height"=6.76462661
-"LA_width"=4.67766733
-"radius_pin"=2.33883367
+"LA_length"=104.84505691
+"LA_height"=28.29754788
+"LA_width"=19.56745332
+"radius_pin"=9.78372666

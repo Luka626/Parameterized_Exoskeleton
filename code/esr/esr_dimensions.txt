@@ -1,4 +1,4 @@
-"LA_length"=50.00000000
-"waist_diameter"=423.35214862
-"partial_sidebar_length"=284.34850000
-"shell_length"=145.01147666
+"LA_length"=104.84505691
+"waist_diameter"=318.30988618
+"partial_sidebar_length"=248.75000000
+"shell_length"=133.89441469
