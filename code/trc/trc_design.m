@@ -26,7 +26,6 @@ fin_hole_radius = 0.01; %m
 fin_thickness = 5*user.height/1500;
 fin_platform_width = 2*user.height/20*sin(18/180*pi)-0.01;
 fin_platform_height = (70.58-60)/(2000-1700)*user.height - 0.01;
-platform_height_width = fin_platform_height/fin_platform_width;
 
 
 a = 0.04; %distance from top of sidebar to velcro slot (will not change)
@@ -108,10 +107,11 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
    else
             shell_outer_radius = shell_outer_radius + shell_outer_radius*kick;
    end
+   fin_platform_width = 2*(shell_outer_radius*20)/20*sin(18/180*pi)-0.01;
 
     if SF_cyclical < GOAL_SF    
-       fin_thickness = fin_thickness + fin_thickness*kick
-       fin_platform_height =fin_platform_height + fin_platform_height*kick
+       fin_thickness = fin_thickness + fin_thickness*kick;
+       fin_platform_height =fin_platform_height + fin_platform_height*kick;
     else
        fin_thickness = fin_thickness - fin_thickness*kick;
        if fin_thickness < 0.003
@@ -122,7 +122,6 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
            fin_platform_height = 0.0375;
        end 
     end
-    fin_platform_width = fin_platform_height/platform_height_width;
     num_iterations = num_iterations + 1;
 
 end
