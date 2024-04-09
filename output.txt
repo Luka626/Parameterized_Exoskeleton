@@ -16340,3 +16340,73 @@
 [system_design] System design complete.
 [app] Design generated sucessfully, rebuild in SolidWorks.
 [app] Logfile saved to C:/MCG4322b/Group4/output.txt
+[app] User data received: 
+[app]    Height = 175.0 cm
+[app]    Weight = 80.00 kg
+[app]    Age    = 75.00 yrs
+[app]    Waist  = 90.0 cm
+[system_design] Received user data.
+[system_design] Deriving anthropometric data.
+[configure_anthropometry] Anthropometric modelling complete.
+[system_design] Fetching design requirements.
+[system_design] Querying material database:
+[material_db]     Accessed al6061 data.
+[material_db]     Accessed al1100 data.
+[material_db]     Accessed hdpe data.
+[system_design] Initiating WRC, LA, TRC analysis.
+[wrc_design] Initializing WRC parametrization: 
+[wrc_design]     backplate_thickness:   0.0075008 m
+[wrc_design]     frontplate_height:     0.0200008 m
+[wrc_design]     adjustment_thickness:  0.0063508 m
+[wrc_design]     hinge_diameter:        0.0080008 m
+[wrc_design]     padding_area:          0.0010008 m
+[wrc_design] Deriving anthropometrized and constant dimensions.
+[wrc_design] WRC parameterization complete.
+[wrc_design] Final values: 
+[wrc_design]     backplate_thickness:   14.40 mm
+[wrc_design]     frontplate_height:     14.14 mm
+[wrc_design]     adjustment_thickness:  4.98 mm
+[wrc_design]     hinge_diameter:        8.10 mm
+[wrc_design]     padding_area:          2283 mm2
+[wrc_design] Final safety factors: 
+[wrc_design]     backplate_SF:  2.500
+[wrc_design]     frontplate_SF: 2.499
+[wrc_design]     adjustment_SF: 2.499
+[wrc_design]     hinge_SF:      2.498
+[wrc_design]     padding_SF:    2.497
+[wrc_design] WRC design completed successfully in 16 iterations.
+[wrc_design] Equations exported to: 'C:/MCG4322b/Group4/code/wrc/wrc_output.txt'
+[system_design] Returned successfully from WRC [1/3].
+[la_design] Initializing LA parametrization: 
+[la_design]     la_height:  0.0188008 m
+[la_design]     la_base:    0.0130008 m
+[la_design] LA parametrization complete.
+[la_design] Final values: 
+[la_design]     LA_height:  29.81 mm
+[la_design]     LA_width:   20.61 mm
+[la_design]     LA_length:  120.76 mm
+[la_design]     radius_pin: 10.31 mm
+[la_design] Final safety factors: 
+[la_design]     LA_cyclical_bending_SF: 94.648
+[la_design]     LA_static_axial_SF:     462.975
+[la_design]     LA_static_bending_SF:   51.072
+[la_design]     pin_cyclical_bending_SF:2.508
+[la_design]     pin_static_axial_SF:    669.219
+[la_design]     pin_static_bending_SF:  52.044
+[la_design] LA design completed successfully in 28 iterations.
+[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la/LA_dimensions.txt'
+[system_design] Returned successfully from LA [2/3].
+[trc_design] TRC parametrization complete.
+[trc_design] Final values: 
+[trc_design]     shell_outer_radius:    0.09 mm
+[trc_design]     fin_platform_height:   0.05 mm
+[trc_design] Final safety factors: 
+[trc_design]     SF_skin_pressure:  2.455
+[trc_design]     SF_bending:        49.390
+[trc_design]     SF_fin_cyclical:   155.402
+[trc_design] TRC design completed successfully in 7 iterations.
+[trc_design] Equations exported to: 'C:/MCG4322b/Group4/code/trc/trc_output.txt'
+[system_design] Returned successfully from TRC [3/3].
+[system_design] System design complete.
+[app] Design generated sucessfully, rebuild in SolidWorks.
+[app] Logfile saved to C:/MCG4322b/Group4/output.txt

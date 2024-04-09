@@ -117,15 +117,10 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
     if SF_cyclical < GOAL_SF    
        fin_thickness = fin_thickness + fin_thickness*kick;
-       fin_platform_height =fin_platform_height + fin_platform_height*kick;
     else
        fin_thickness = fin_thickness - fin_thickness*kick;
        if fin_thickness < 0.003
           fin_thickness = 0.003; % limited for manufacturing purposes
-       end 
-       fin_platform_height = fin_platform_height - fin_platform_height*kick;
-       if fin_platform_height < 0.0375
-          fin_platform_height = 0.0375;
        end 
     end
     num_iterations = num_iterations + 1;
