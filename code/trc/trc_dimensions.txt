@@ -1,6 +1,6 @@
-"shell_outer_radius"=82.54545455
-"fin_platform_width"=41.01589653
-"fin_platform_height"=37.50000000
-"fin_thickness"=3.00000000
-"partial_sidebar_length"=248.75000000
-"shell_length"=133.89441469
+"shell_outer_radius"=80.38129641
+"fin_platform_width"=39.67837324
+"fin_platform_height"=46.74126762
+"fin_thickness"=5.35875309
+"partial_sidebar_length"=215.67500000
+"shell_length"=123.56541699

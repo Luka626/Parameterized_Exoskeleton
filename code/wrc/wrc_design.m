@@ -175,17 +175,17 @@ function [safety_factors] = wrc_design(app, anthro, design_inputs, material_data
 
     log_to_output(app, sprintf("[wrc_design] WRC parameterization complete."));
     log_to_output(app, sprintf("[wrc_design] Final values: "));
-    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %f8 m", backplate.thickness));
-    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %f8 m", frontplate.height));
-    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %f8 m", adjustment.thickness));
-    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %f8 m", hinge.diameter));
-    log_to_output(app, sprintf("[wrc_design]     padding_area:          %f8 m", padding.area));
+    log_to_output(app, sprintf("[wrc_design]     backplate_thickness:   %.2f mm", best_configuration.dimensions.backplate_thickness));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_height:     %.2f mm", best_configuration.dimensions.frontplate_height));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_thickness:  %.2f mm", best_configuration.dimensions.adjustment_thickness));
+    log_to_output(app, sprintf("[wrc_design]     hinge_diameter:        %.2f mm", best_configuration.dimensions.hinge_diameter));
+    log_to_output(app, sprintf("[wrc_design]     padding_area:          %.0f mm2", best_configuration.dimensions.Padding_Area1));
     log_to_output(app, sprintf("[wrc_design] Final safety factors: "));
-    log_to_output(app, sprintf("[wrc_design]     backplate_SF:  %f2", best_configuration.safety_factors.backplate_SF));
-    log_to_output(app, sprintf("[wrc_design]     frontplate_SF: %f2", best_configuration.safety_factors.frontplate_SF));
-    log_to_output(app, sprintf("[wrc_design]     adjustment_SF: %f2", best_configuration.safety_factors.adjustment_SF));
-    log_to_output(app, sprintf("[wrc_design]     hinge_SF:      %f2", best_configuration.safety_factors.hinge_SF));
-    log_to_output(app, sprintf("[wrc_design]     padding_SF:    %f2", best_configuration.safety_factors.padding_SF));
+    log_to_output(app, sprintf("[wrc_design]     backplate_SF:  %.3f", best_configuration.safety_factors.backplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     frontplate_SF: %.3f", best_configuration.safety_factors.frontplate_SF));
+    log_to_output(app, sprintf("[wrc_design]     adjustment_SF: %.3f", best_configuration.safety_factors.adjustment_SF));
+    log_to_output(app, sprintf("[wrc_design]     hinge_SF:      %.3f", best_configuration.safety_factors.hinge_SF));
+    log_to_output(app, sprintf("[wrc_design]     padding_SF:    %.3f", best_configuration.safety_factors.padding_SF));
     log_to_output(app, sprintf("[wrc_design] WRC design completed successfully in %d iterations.", num_iterations));
     log_to_output(app, sprintf("[wrc_design] Equations exported to: 'C:/MCG4322b/Group4/code/wrc/wrc_output.txt'"));
 end

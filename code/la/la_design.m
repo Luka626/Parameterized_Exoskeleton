@@ -21,6 +21,11 @@ weight_pulley = 0.11189; %N
     hip_cuff_distance = 7/8*user.L_thigh; %m
     waist_hip_length = 0.1*user.height;
     LA_length = 1/4*user.stride_length - user.waist_radius - length_pin - waist_cuff_thickness;
+    LA_length_lb = 0.05;
+    if LA_length < LA_length_lb
+        LA_length = LA_length_lb;
+    end
+
 
 
 
@@ -157,17 +162,17 @@ end
         'waist_diameter', user.waist_radius*2*1000);
     log_to_output(app, sprintf("[la_design] LA parametrization complete."));
     log_to_output(app, sprintf("[la_design] Final values: "));
-    log_to_output(app, sprintf("[la_design]     LA_height:  %f8 m", best_configuration.dimensions.LA_height));
-    log_to_output(app, sprintf("[la_design]     LA_width:   %f8 m", best_configuration.dimensions.LA_width));
-    log_to_output(app, sprintf("[la_design]     LA_length:  %f8 m", best_configuration.dimensions.LA_length));
-    log_to_output(app, sprintf("[la_design]     radius_pin: %f8 m", best_configuration.dimensions.radius_pin));
+    log_to_output(app, sprintf("[la_design]     LA_height:  %.2f mm", best_configuration.dimensions.LA_height));
+    log_to_output(app, sprintf("[la_design]     LA_width:   %.2f mm", best_configuration.dimensions.LA_width));
+    log_to_output(app, sprintf("[la_design]     LA_length:  %.2f mm", best_configuration.dimensions.LA_length));
+    log_to_output(app, sprintf("[la_design]     radius_pin: %.2f mm", best_configuration.dimensions.radius_pin));
     log_to_output(app, sprintf("[la_design] Final safety factors: "));
-    log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF: %f8 m", best_configuration.safety_factors.LA_cyclical_bending_SF));
-    log_to_output(app, sprintf("[la_design]     LA_static_axial_SF:     %f8 m", best_configuration.safety_factors.LA_static_axial_SF));
-    log_to_output(app, sprintf("[la_design]     LA_static_bending_SF:   %f8 m", best_configuration.safety_factors.LA_static_bending_SF));
-    log_to_output(app, sprintf("[la_design]     pin_cyclical_bending_SF:%f8 m", best_configuration.safety_factors.pin_cyclical_bending_SF));
-    log_to_output(app, sprintf("[la_design]     pin_static_axial_SF:    %f8 m", best_configuration.safety_factors.pin_static_axial_SF));
-    log_to_output(app, sprintf("[la_design]     pin_static_bending_SF:  %f8 m", best_configuration.safety_factors.pin_static_bending_SF));
+    log_to_output(app, sprintf("[la_design]     LA_cyclical_bending_SF: %.3f", best_configuration.safety_factors.LA_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_axial_SF:     %.3f", best_configuration.safety_factors.LA_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     LA_static_bending_SF:   %.3f", best_configuration.safety_factors.LA_static_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_cyclical_bending_SF:%.3f", best_configuration.safety_factors.pin_cyclical_bending_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_axial_SF:    %.3f", best_configuration.safety_factors.pin_static_axial_SF));
+    log_to_output(app, sprintf("[la_design]     pin_static_bending_SF:  %.3f", best_configuration.safety_factors.pin_static_bending_SF));
     log_to_output(app, sprintf("[la_design] LA design completed successfully in %d iterations.", num_iterations));
     log_to_output(app, sprintf("[la_design] Equations exported to: 'C:/MCG4322b/Group4/code/la/LA_dimensions.txt'"));
     log_dimensions("code/la/LA_dimensions.txt", best_configuration.dimensions);
