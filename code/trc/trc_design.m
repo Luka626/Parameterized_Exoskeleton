@@ -35,7 +35,7 @@ L =partialSidebarLength + shellLength;
 % For parametrization %
 best_configuration = struct();
 cost = intmax;
-cost_threshold = 0.05;
+cost_threshold = 0.001;
 num_iterations = 0;
 MAX_ITER = 1000;
 GOAL_SF = 2.5;
@@ -83,7 +83,7 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         'SF_bending', SF_bending, ...    
         'SF_fin_cyclical', SF_cyclical, ...
         'SF_skin_pressure', SF_pressure);
-    weights = [0.001,0.0001,0.4];
+    weights = [0.0001,0.0001,1.0];
     config.cost = compute_cost(config.safety_factors, weights);
 
     % dimensions to log %
@@ -102,7 +102,7 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
         end
 
     % Increment/Decrement parameter based on SF %
-    kick = (1/1000)*sqrt(config.cost)
+    kick = (1/10000)*sqrt(config.cost);
 
     if SF_pressure > GOAL_SF || SF_bending > GOAL_SF
         shell_outer_radius = shell_outer_radius - shell_outer_radius*kick;
@@ -117,20 +117,25 @@ while (cost > cost_threshold && num_iterations <= MAX_ITER)
     
     if SF_cyclical < GOAL_SF    
        fin_thickness = fin_thickness + fin_thickness*kick;
+       fin_platform_height =fin_platform_height + fin_platform_height*kick;
     else
        fin_thickness = fin_thickness - fin_thickness*kick;
        if fin_thickness < 0.003
           fin_thickness = 0.003; % limited for manufacturing purposes
        end 
+       fin_platform_height = fin_platform_height - fin_platform_height*kick;
+       if fin_platform_height < 0.0375
+          fin_platform_height = 0.0375;
+       end 
     end
     num_iterations = num_iterations + 1;
-    cost
-    iterations  = [iterations;  num_iterations];
-    costs       = [costs;   config.cost];
+
+    %iterations  = [iterations;  num_iterations];
+    %costs       = [costs;   config.cost];
 end
-plot(iterations, costs);
-best_configuration.safety_factors
-num_iterations
+%plot(iterations, costs);
+
+
 best_configuration.esr_dimensions = struct(...
     "partial_sidebar_length", best_configuration.dimensions.partial_sidebar_length,...
     "shell_length", best_configuration.dimensions.shell_length);
@@ -141,8 +146,12 @@ safety_factors = best_configuration.safety_factors;
 
 log_to_output(app, sprintf("[trc_design] TRC parametrization complete."));
 log_to_output(app, sprintf("[trc_design] Final values: "));
-log_to_output(app, sprintf("[trc_design]     shell_outer_radius:    %.2f mm", shell_outer_radius));
-log_to_output(app, sprintf("[trc_design]     fin_platform_height:   %.2f mm", fin_platform_height));
+log_to_output(app, sprintf("[trc_design]     shell_outer_radius:        %.2f mm", best_configuration.dimensions.shell_outer_radius));
+log_to_output(app, sprintf("[trc_design]     fin_platform_height:       %.2f mm", best_configuration.dimensions.fin_platform_height));
+log_to_output(app, sprintf("[trc_design]     fin_platform_width:        %.2f mm", best_configuration.dimensions.fin_platform_width));
+log_to_output(app, sprintf("[trc_design]     fin_thickness:             %.2f mm", best_configuration.dimensions.fin_thickness));
+log_to_output(app, sprintf("[trc_design]     partial_sidebar_length:    %.2f mm", best_configuration.dimensions.partial_sidebar_length));
+log_to_output(app, sprintf("[trc_design]     shell_length:              %.2f mm", best_configuration.dimensions.shell_length));
 log_to_output(app, sprintf("[trc_design] Final safety factors: "));
 log_to_output(app, sprintf("[trc_design]     SF_skin_pressure:  %.3f", safety_factors.SF_skin_pressure));
 log_to_output(app, sprintf("[trc_design]     SF_bending:        %.3f", safety_factors.SF_bending));
